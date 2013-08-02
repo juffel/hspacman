@@ -1,6 +1,7 @@
 module GameData where
 
 import Graphics.Gloss hiding(Point)
+import Math.Matrix
 
 type Pos = Vec Int
 type Direction = Vec Int
@@ -34,7 +35,8 @@ data GameData = GameData {
 	characters :: Characters
 }
 
---data Labyrinth = Labyrinth
+type Labyrinth = Matrix Territory
+data Territory = Free | Wall
 data Items = Items {
 	dots :: Object,
 	fruits :: Object
