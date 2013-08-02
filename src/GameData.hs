@@ -1,12 +1,11 @@
 module GameData where
 
+import Vector2D
 import Graphics.Gloss hiding(Point)
 import Math.Matrix
 
 type Pos = Vec Int
 type Direction = Vec Int
-
-type Vec a = (a,a)
 
 type Time = Float
 
