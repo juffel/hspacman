@@ -1,11 +1,13 @@
-module HsPacMan where
+module GameData where
 
 import Graphics.Gloss hiding(Point)
 
-type Point = Vec Int
+type Pos = Vec Int
 type Direction = Vec Int
 
 type Vec a = (a,a)
+
+type Time = Float
 
 
 data World = World {
@@ -32,7 +34,7 @@ data GameData = GameData {
 	characters :: Characters
 }
 
-data Labyrinth = Labyrinth
+--data Labyrinth = Labyrinth
 data Items = Items {
 	dots :: Object,
 	fruits :: Object
@@ -49,7 +51,7 @@ data Object = Object {
 }
 
 data ObjParams = ObjParams {
-	pos :: Point
+	pos :: Pos
 }
 
 data RenderParams = RenderParams {
@@ -65,5 +67,5 @@ data MovableParams = MovableParams {
 	speed :: Direction
 }
 
-data ObjectType = Dot | Fruit
-data MovableObjType = PacMan | Monster
+{-data ObjectType = Dot | Fruit
+data MovableObjType = PacMan | Monster-}
