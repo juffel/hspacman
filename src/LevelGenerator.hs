@@ -2,11 +2,12 @@ module LevelGenerator where
 
 import GameData
 import Vector2D
+import Prelude hiding(Left,Right)
 
 import Math.Matrix
-import Control.Monad.State
+--import Control.Monad.State
 
-data Direction = Up | Down | Right | Left
+data Movement = Up | Down | Right | Left
 
 {-data State s t = State { runState :: s -> (t,s) }
 instance Monad (State s) where
@@ -34,9 +35,40 @@ right = state $ \pos0 -> (newDir,pos <+> (1,0))
 {-mapWithPath :: [PosState ((a->a),Movement) ] -> Matrix a -> Matrix a
 mapWithPath (x:xs) matr = -}
 
---type Behaviour = (View -> (a,Maybe Direction)) 
+type View a = (Matrix a, Pos)
+type Behaviour a = (View a -> (a,Maybe Movement)) 
 
---calcNewMatr :: Behaviour -> Matrix -> Matrix a -> Matrix a
+calcNewMatr :: Behaviour a -> Pos -> Matrix a -> Matrix a
+calcNewMatr beh pos0 matr =
+	let
+		(newVal,dir) = beh (matr, pos0)
+		newMatr = mSet pos0 newVal matr 
+	in case dir of 
+		Nothing -> newMatr
+		Just dir' -> calcNewMatr beh newPos newMatr
+			where 
+				newPos = getNeighbourIndex (mGetWidth matr,mGetHeight matr) pos0 dir'
+
+-- realizes a "torus like" behavior for positions on the field
+getNeighbourIndex :: Size -> MatrIndex -> Movement -> MatrIndex
+getNeighbourIndex (width,height) pos@(x,y) dir = case dir of
+	Up -> (x,(y-1) `niceMod` width)
+	--UpRight -> getNeighbourIndex field (getNeighbourIndex field pos Up) Right
+	Right -> ((x+1) `niceMod` height, y)
+	--DownRight -> getNeighbourIndex field (getNeighbourIndex field pos Down) Right
+	Down -> (x,(y+1) `niceMod` width)
+	--DownLeft -> getNeighbourIndex field (getNeighbourIndex field pos Down) Left
+	Left -> ((x-1) `niceMod` height, y)
+	--UpLeft -> getNeighbourIndex field (getNeighbourIndex field pos Up) Left
+	where
+		{-width = mGetWidth field
+		height = mGetHeight field-}
+		niceMod val m = case signum val of
+			(-1) -> niceMod (val+m) m
+			(1) -> val `mod` m
+			(0) -> 0
+			otherwise -> error "niceMod internal error!"
+
 
 genLabyrinth :: Size -> Int -> Labyrinth
 genLabyrinth (width,height) seed = 
@@ -63,7 +95,7 @@ genLabyrinth (width,height) seed =
 		lines = take width $ repeat Wall
 
 
-inBox :: Box -> Pos -> Bool
+inBox :: Area -> Pos -> Bool
 inBox (posBox,sizeBox) pos = (pos `vecGOE` posBox) && (pos `vecSOE` (posBox <+> sizeBox))
 	where
 		vecGOE l r = (vecX l >= vecX r) && (vecY l >= vecY r)
