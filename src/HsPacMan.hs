@@ -26,10 +26,15 @@ display = InWindow windowTitle windowSize windowPos
 bgColour = black
 framerate = 40
 
+{-data DisplaySettings = DisplaySettings {
+	windowPos :: Pos,
+	windowSize :: Size
+}
+
 dispSettings = DisplaySettings {
     windowPos = (100, 100),
     windowSize = (400, 300)
-}
+}--}
 
 startWorld = undefined
 
