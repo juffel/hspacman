@@ -8,6 +8,8 @@ type Pos = Vec Int -- probably deprecated
 type PosF = Vec Float
 type Direction = Vec Int -- probably deprecated
 type DirectionF = Vec Float
+type Size = Vec Int
+type Box = (Pos,Size)
 
 type Time = Float
 
@@ -38,7 +40,7 @@ data GameData = GameData {
 }
 
 type Labyrinth = Matrix Territory
-data Territory = Free | Wall
+data Territory = Free | Wall deriving(Show)
 data Items = Items {
 	dots :: Object,
 	fruits :: Object
