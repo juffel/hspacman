@@ -4,11 +4,12 @@ import Vector2D
 import Graphics.Gloss hiding(Point)
 import Math.Matrix
 
-type Pos = Vec Int
-type Direction = Vec Int
+type Pos = Vec Int -- probably deprecated
+type PosF = Vec Float
+type Direction = Vec Int -- probably deprecated
+type DirectionF = Vec Float
 
 type Time = Float
-
 
 data World = World {
 	settings :: Settings,
@@ -21,10 +22,12 @@ data Settings = Settings {
 }
 
 data UIState = Playing | Menu
+
 data GameState = GameState {
 	level :: Level,
 	points :: Points
 }
+
 type Level = Int
 type Points = Int
 
@@ -52,7 +55,7 @@ data Object = Object {
 }
 
 data ObjParams = ObjParams {
-	pos :: Pos
+	pos :: PosF
 }
 
 data RenderParams = RenderParams {
@@ -65,7 +68,7 @@ data MovableObj = MovableObj {
 }
 
 data MovableParams = MovableParams {
-	speed :: Direction
+	speed :: DirectionF
 }
 
 {-data ObjectType = Dot | Fruit
