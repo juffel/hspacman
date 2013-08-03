@@ -1,6 +1,7 @@
 module Main where
 
 import GameData
+import LevelGenerator
 
 import Graphics.Gloss hiding(display)
 import qualified Graphics.Gloss as G

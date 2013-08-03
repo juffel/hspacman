@@ -6,6 +6,9 @@ import Math.Matrix
 
 type Pos = Vec Int
 type Direction = Vec Int
+type Size = Vec Int
+
+type Box = (Pos,Size)
 
 type Time = Float
 
@@ -35,7 +38,7 @@ data GameData = GameData {
 }
 
 type Labyrinth = Matrix Territory
-data Territory = Free | Wall
+data Territory = Free | Wall deriving(Show)
 data Items = Items {
 	dots :: Object,
 	fruits :: Object
