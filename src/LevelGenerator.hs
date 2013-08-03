@@ -4,7 +4,7 @@ import GameData
 import Vector2D
 
 import Math.Matrix
-import Control.Monad.State
+-- import Control.Monad.State
 
 data Direction = Up | Down | Right | Left
 
