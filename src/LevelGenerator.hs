@@ -36,7 +36,7 @@ right = state $ \pos0 -> (newDir,pos <+> (1,0))
 mapWithPath (x:xs) matr = -}
 
 type View a = (Matrix a, Pos)
-type Behaviour a = (View a -> (a,Maybe Movement)) 
+type Behaviour a = (View a -> (a,Maybe Movement))
 
 calcNewMatr :: Behaviour a -> Pos -> Matrix a -> Matrix a
 calcNewMatr beh pos0 matr =
@@ -47,7 +47,19 @@ calcNewMatr beh pos0 matr =
 		Nothing -> newMatr
 		Just dir' -> calcNewMatr beh newPos newMatr
 			where 
-				newPos = getNeighbourIndex (mGetWidth matr,mGetHeight matr) pos0 dir'
+				newPos = getNeighbourIndex (mGetWidth matr, mGetHeight matr) pos0 dir'
+
+makeTunnel :: Pos -> Matrix Territory -> Matrix Territory
+makeTunnel pos0 matr = calcNewMatr beh pos0 matr
+	where
+		beh :: Behaviour Territory
+		beh (matr,pos) = (Free,movement)
+			where
+				movement =
+					if vecX pos < mGetWidth matr
+					then Just Right
+					else Nothing
+					
 
 -- realizes a "torus like" behavior for positions on the field
 getNeighbourIndex :: Size -> MatrIndex -> Movement -> MatrIndex
@@ -70,10 +82,15 @@ getNeighbourIndex (width,height) pos@(x,y) dir = case dir of
 			otherwise -> error "niceMod internal error!"
 
 
+massiveField :: Size -> Labyrinth
+massiveField (width,height) = mUnsafe (take height $ repeat lines)
+	where
+		lines = take width $ repeat Wall
+
 genLabyrinth :: Size -> Int -> Labyrinth
 genLabyrinth (width,height) seed = 
 	circle $
-	mUnsafe (take height $ repeat lines)
+	massiveField (width,height)
 	where
 		circle :: Labyrinth -> Labyrinth
 		circle l = mapWithIndex makeCircle l
@@ -92,7 +109,6 @@ genLabyrinth (width,height) seed =
 							return (xDiff,yDiff)
 						xor a b = (a && not b) || (not a && b)
 						-}
-		lines = take width $ repeat Wall
 
 
 inBox :: Area -> Pos -> Bool
