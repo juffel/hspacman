@@ -14,6 +14,7 @@ type Size = Vec Int
 type Area = (Pos,Size)
 
 type Time = Float
+type DeltaT = Float
 
 data World = World {
 	settings :: Settings,
