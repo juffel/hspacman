@@ -44,7 +44,9 @@ renderMenu :: World -> Picture
 renderMenu = Pictures [Text "Pacman - The Menu", renderBg  ]
 
 renderBg :: DisplaySettings -> Picture
-renderBg = undefined 
+renderBg set = Color black $ Polygon path
+    where   (sizeX, sizeY) = windowSize set
+            path = map i2C [ (0,0), (sizeX, 0), (sizeX, sizeY), (0, sizeY), (0,0) ]
 
 handleInput = undefined
 moveWorld = undefined
