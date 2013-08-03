@@ -5,6 +5,12 @@ import GameData
 import Graphics.Gloss hiding(display)
 import qualified Graphics.Gloss as G
 
+progName = "hsPacMan"
+
+windowTitle = progName
+windowSize = (800,600)
+windowPos = (10,10)
+
 
 main = play
 	display
@@ -15,9 +21,11 @@ main = play
 	handleInput
 	moveWorld
 
-display = undefined
-bgColour = undefined
-framerate = undefined
+display = InWindow windowTitle windowSize windowPos
+bgColour = black
+framerate = 40
+
+
 startWorld = undefined
 renderWorld = undefined
 handleInput = undefined
