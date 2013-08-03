@@ -4,12 +4,14 @@ import Vector2D
 import Graphics.Gloss hiding(Point)
 import Math.Matrix
 
+import Prelude hiding(Left,Right)
+
 type Pos = Vec Int -- probably deprecated
 type PosF = Vec Float
 type Direction = Vec Int -- probably deprecated
 type DirectionF = Vec Float
 type Size = Vec Int
-type Box = (Pos,Size)
+type Area = (Pos,Size)
 
 type Time = Float
 
