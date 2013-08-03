@@ -40,7 +40,10 @@ startWorld = undefined
 
 renderWorld :: World -> Picture
 renderWorld world = case (uiState . setings world) of -- check wether the game is currently in status Playing or Menu
-    Playing -> renderPlaying world
+    Playing ->  (uncurry Translate) (i2C (0,0)) $ -- Translation
+                Scale 1 (-1) $ -- flip y-axis
+                renderPlaying world
+
     Menu -> renderMenu world
 
 renderPlaying :: World -> Picture
@@ -52,7 +55,7 @@ renderMenu = Pictures [Text "Pacman - The Menu", renderBg  ]
 renderBg :: DisplaySettings -> Picture
 renderBg set = Color black $ Polygon path
     where   (sizeX, sizeY) = windowSize set
-            path = map i2C [ (0,0), (sizeX, 0), (sizeX, sizeY), (0, sizeY), (0,0) ]
+            path = [ (0,0), (sizeX, 0), (sizeX, sizeY), (0, sizeY), (0,0) ]
 
 handleInput = undefined
 moveWorld = undefined
