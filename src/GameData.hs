@@ -7,7 +7,7 @@ import Math.Matrix
 import Prelude hiding(Left,Right)
 
 type Pos = Vec Int -- probably deprecated
-type PosF = Vec Float
+type PosF = Vec Float -- logical Position on field
 type Direction = Vec Int -- probably deprecated
 type DirectionF = Vec Float
 type Size = Vec Int
