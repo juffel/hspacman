@@ -113,13 +113,13 @@ data MovableParams = MovableParams {
 -- realizes a "torus like" behavior for positions on the field
 getNeighbourIndex :: Size -> MatrIndex -> Movement -> MatrIndex
 getNeighbourIndex (width,height) pos@(x,y) dir = case dir of
-	Up -> (x,(y-1) `niceMod` width)
+	Up -> (x,(y-1) `niceMod` height)
 	--UpRight -> getNeighbourIndex field (getNeighbourIndex field pos Up) Right
-	Right -> ((x+1) `niceMod` height, y)
+	Right -> ((x+1) `niceMod` width, y)
 	--DownRight -> getNeighbourIndex field (getNeighbourIndex field pos Down) Right
-	Down -> (x,(y+1) `niceMod` width)
+	Down -> (x,(y+1) `niceMod` height)
 	--DownLeft -> getNeighbourIndex field (getNeighbourIndex field pos Down) Left
-	Left -> ((x-1) `niceMod` height, y)
+	Left -> ((x-1) `niceMod` width, y)
 	--UpLeft -> getNeighbourIndex field (getNeighbourIndex field pos Up) Left
 	where
 		{-width = mGetWidth field

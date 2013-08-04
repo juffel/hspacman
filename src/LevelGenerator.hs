@@ -87,9 +87,10 @@ randomTunnels lab wallRatio = if currentWallRatio <= wallRatio then return lab e
 	randomPos <- fromList $ zip (mGetAllIndex lab) (repeat 1)
 	--let lab' = lab
 	lab' <- boreTunnel randomPos Right lab
-	lab'' <- boreTunnel (randomPos <+> (-1,0)) Left lab'
-	--let lab'' = lab'
-	randomTunnels lab'' wallRatio
+	--lab'' <- boreTunnel (randomPos <+> (-1,0)) Left lab'
+	let lab'' = lab'
+	return lab''
+	--randomTunnels lab'' wallRatio
 	where
 		currentWallRatio = (fromIntegral countWall) / (fromIntegral $ width*height)
 		countWall = F.foldl (+) 0 (fmap toInt lab)
