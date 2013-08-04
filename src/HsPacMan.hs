@@ -34,14 +34,14 @@ main = play
 
 display = InWindow windowTitle (fOnVec floor windowSize) (fOnVec floor windowPos)
 bgColour = black
-framerate = 40
+framerate = 60
 
 startWorld seed = World {
     uiState=Menu,
     level=1,
     points=0,
     labyrinth=genLabyrinth (30,29) 0.95 seed,
-    pacman=Object{pos=(2.5, 5.5), dirSpeed=(1,0)},
+    pacman=Object{pos=(2.5, 5.5), dirSpeed=(5,0)},
     ghosts=undefined,
     dots=undefined,
     fruits=undefined
@@ -63,16 +63,26 @@ handleInput event world =
                     Char 'p' -> undefined -- TODO: pause
                     _ -> world --alternative menue
                 Playing -> case key of
-                    Char 'w' -> movePac GameData.Up world
-                    Char 's' -> movePac GameData.Down world
-                    Char 'a' -> movePac GameData.Left world
-                    Char 'd' -> movePac GameData.Right world
+                    Char 'w' -> setPacDir world GameData.Up
+                    Char 's' -> setPacDir world GameData.Down
+                    Char 'a' -> setPacDir world GameData.Left
+                    Char 'd' -> setPacDir world GameData.Right
                     _ -> world --alternative playing
 
     _ -> world -- ignore other events
 
 setUIState :: World -> UIState -> World
 setUIState world state = world {uiState = state}
+
+-- |changes the moving direction of the pacman
+setPacDir :: World -> Direction -> World
+setPacDir world dir = case dir of
+    GameData.Up -> world {pacman = (pacman world) {dirSpeed= (0, -abs)}}
+    GameData.Down -> world {pacman = (pacman world) {dirSpeed= (0, abs)}}
+    GameData.Left -> world {pacman = (pacman world) {dirSpeed= (-abs, 0)}}
+    GameData.Right -> world {pacman = (pacman world) {dirSpeed= (abs, 0)}}
+    where
+        abs = vecLength (dirSpeed $ pacman $ world)
 
 moveWorld :: DeltaT -> World -> World
 moveWorld deltaT world = manageCollisions $ (movePacman deltaT) $ (moveGhosts deltaT) world
@@ -92,11 +102,3 @@ movePacman d world = world {pacman= (pacman world) {pos=newPos}}
 -- TODO
 manageCollisions :: World -> World
 manageCollisions world = world
-
--- kollision bedenken?
-movePac :: Movement -> World -> World
-movePac mov world = case mov of
-     GameData.Up -> undefined
-     GameData.Down -> undefined
-     GameData.Left -> undefined
-     GameData.Right -> undefined
