@@ -7,7 +7,7 @@ import Math.Matrix
 import Prelude hiding(Left,Right)
 
 -- |Directions in Labyrinth
-data Direction = Up | Down | Right | Left
+data Direction = Up | Down | Right | Left deriving(Show,Eq)
 -- |Movement on Labyrinth
 type Movement = Direction
 

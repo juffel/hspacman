@@ -2,10 +2,11 @@ module LevelGenerator(
 	genLabyrinth
 ) where
 
-import GameData hiding(Direction)
+import GameData --hiding(Direction)
 import Vector2D
 import Prelude hiding(Left,Right)
 import Data.Tuple
+import qualified Data.Foldable as F
 
 import Math.Matrix
 --import Numeric.Probability.Distribution
@@ -13,44 +14,53 @@ import Control.Monad.Random
 import System.Random
 
 
-type View a st = (Matrix a, Pos, st)
-type Behaviour a st = (View a st -> (a,Maybe Movement,st))
+--type View a st = (Matrix a, Pos)
+type View a = (Matrix a, Pos)
+--type Behaviour a st = (View a st -> (a,Maybe Movement,st))
+type Behaviour a = (View a -> (a,Maybe Movement))
 
-calcNewMatr :: Behaviour a st -> Pos -> Matrix a -> st -> Matrix a
-calcNewMatr beh pos0 matr st =
+
+oneStep :: Rand g (Behaviour a) -> Pos -> Matrix a -> Rand g ((Matrix a), Maybe Movement)
+oneStep randomBeh pos0 matr = do
+	beh <- randomBeh
 	let
-		(newVal,dir,newSt) = beh (matr, pos0,st)
+		(newVal,dir) = beh (matr, pos0)
 		newMatr = mSet (swap pos0) newVal matr 
-	in case dir of 
-		Nothing -> newMatr
-		Just dir' -> calcNewMatr beh newPos newMatr newSt
-			where 
-				newPos = getNeighbourIndex (mGetWidth matr, mGetHeight matr) pos0 dir'
+	--return (matr,Just Right)
+	return (newMatr,dir)
 
---rndProp 
-
---type TunnelState = 
-
-makeTunnel :: (RandomGen g) => Rand g Movement -> Pos -> Matrix Territory -> g -> Matrix Territory
-makeTunnel distr pos0 matr gen = calcNewMatr beh pos0 matr gen
-	where
-		--beh :: (RandomGen g') => Behaviour Territory g'
-		--beh :: Behaviour Territory g
-		beh (matr,pos,gen') = (Free,movement,newGen)
+calcNewMatr randomBeh pos0 matr = do
+	(newMatr, mov) <- oneStep randomBeh pos0 matr
+	case mov of
+		Nothing -> return newMatr
+		Just dir -> calcNewMatr randomBeh newPos newMatr
 			where
-				movement =
-					if (mGet pos matr) == Wall
-					then Just dir
-					else Nothing
-				{-
-					if vecX pos < mGetWidth matr
-					then Just Right
-					else Nothing
-				-}
-				(dir,newGen) = runRand distr gen'
+				newPos = getNeighbourIndex (mGetWidth matr, mGetHeight matr) pos0 dir
 
-randomList :: (RandomGen gen) => Rand gen Movement
-randomList = fromList [(Up,0.05),(Down,0.05),(Left,0.05),(Right,0.85)]
+
+wormBehaviour :: (RandomGen g) => (Direction,Rational) -> Rand g (Behaviour Territory)
+wormBehaviour favDir = do
+	randomDir <- randomDirS favDir 
+	return $ \(mat,pos) -> (Free,calcNewDir randomDir mat pos)
+
+calcNewDir randomDir mat pos = case (mGet pos mat) of
+	Free -> Nothing 
+	_ -> Just randomDir
+
+opposite :: Direction -> Direction
+opposite Left = Right
+opposite Right = Left
+opposite Up = Down
+opposite Down = Up
+
+-- returns a distribution of directions, given any "favourite" direction:
+randomDirS :: (RandomGen gen) => (Direction,Rational) -> Rand gen Movement
+randomDirS (preference,prob) = fromList $ (preference,prob) : map (\x -> (x,(1 - prob)/2)) (orthogonal preference)
+
+orthogonal :: Direction -> [Direction]
+orthogonal d = [ ret | ret<-allDirs, ret/=d, ret/=opposite d ]
+
+allDirs = [Up,Down,Left,Right]
 
 {-
 -- calculates a list of random values from a given distribution
@@ -64,10 +74,26 @@ massiveField (width,height) = mUnsafe (take height $ repeat lines)
 	where
 		lines = take width $ repeat Wall
 
-genLabyrinth :: Size -> Int -> Labyrinth
-genLabyrinth (width,height) seed = 
-	
-	massiveField (width,height)
+genLabyrinth :: Size -> Float -> Int -> Labyrinth
+genLabyrinth (width,height) wallRatio seed = 
+	evalRand (randomTunnels startMatrix wallRatio) (mkStdGen seed)
+		where
+			startMatrix = massiveField (width,height)
+
+randomTunnels :: (RandomGen g) => Labyrinth -> Float -> Rand g Labyrinth
+randomTunnels lab wallRatio = if currentWallRatio <= wallRatio then return lab else do
+	randomPos <- fromList $ zip (mGetAllIndex lab) (repeat 1)
+	lab' <- boreTunnel randomPos Right lab
+	lab'' <- boreTunnel randomPos Left lab'
+	randomTunnels lab'' wallRatio
+	where
+		currentWallRatio = (fromIntegral countWall) / (fromIntegral $ width*height)
+		countWall = F.foldl (+) 0 (fmap toInt lab)
+		(width,height) = (mGetWidth lab, mGetHeight lab)
+		toInt Wall = 1
+		toInt Free = 0
+
+boreTunnel pos0 favDir matr = calcNewMatr (wormBehaviour (favDir,0.9)) pos0 matr
 
 inBox :: Area -> Pos -> Bool
 inBox (posBox,sizeBox) pos = (pos `vecGOE` posBox) && (pos `vecSOE` (posBox <+> sizeBox))
