@@ -1,6 +1,8 @@
-module LevelGenerator where
+module LevelGenerator(
+	genLabyrinth
+) where
 
-import GameData
+import GameData hiding(Direction)
 import Vector2D
 import Prelude hiding(Left,Right)
 import Data.Tuple
@@ -10,19 +12,11 @@ import Math.Matrix
 import Control.Monad.Random
 import System.Random
 
-data Movement = Up | Down | Right | Left
+-- |Directions in Labyrinth
+data Direction = Up | Down | Right | Left
+-- |Movement on Labyrinth
+type Movement = Direction
 
-
-{-data State s t = State { runState :: s -> (t,s) }
-instance Monad (State s) where
-	return val = State $ \st -> (val, st)
-	-- State s a -> (a -> State s b) -> State s b
-	-- (s -> (a,s)) -> ( a -> (s -> (b,s) ) ) -> ( s -> (b,s) )
-	f1 >>= createf2 = State $ \s0 ->
-		let (leftVal,leftState) =(runState f1) s0
-		in let (State f2) = (createf2 leftVal)
-			in f2 s0
--}
 
 type View a st = (Matrix a, Pos, st)
 type Behaviour a st = (View a st -> (a,Maybe Movement,st))

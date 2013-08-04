@@ -1,7 +1,7 @@
 module Main where
 
 import GameData
-import LevelGenerator hiding(Down)
+import LevelGenerator
 import Renderpipeline
 import Vector2D
 import Math.Matrix
