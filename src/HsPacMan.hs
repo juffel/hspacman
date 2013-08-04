@@ -41,7 +41,7 @@ startWorld = World {
 
 handleInput :: Event -> World -> World
 handleInput event world = case event of
-    (EventKey key Down _ _) -> case uiState of
+    (EventKey key Down _ _) -> case uiState (settings world) of
         Menu -> case key of
             SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
             SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
