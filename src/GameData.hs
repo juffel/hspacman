@@ -56,7 +56,7 @@ data Items = Items {
 
 data Characters = Characters {
 	pacMan :: MovableObj,
-	monsters :: MovableObj
+	monsters :: [MovableObj]
 }
 
 data Object = Object {
