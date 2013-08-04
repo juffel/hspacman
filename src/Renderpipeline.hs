@@ -46,8 +46,15 @@ renderMenu _ = Pictures [ (Translate (-140) (230) $ Scale 0.5 0.5 $ Color white 
 renderPacman :: Labyrinth -> Object -> AreaOnScreen -> Picture
 renderPacman lab pacman areaOS = Pictures [ drawPacman pacman areaOS ]
     where
-        drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF areaOS lab (pos pacman) ) $ Color yellow $ ThickCircle (radius/2) radius
-        radius = vecX $ screenPosFromPosF areaOS lab (0.5, 0)
+        drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF areaOS lab (pos pacman) ) $ Color yellow $
+		(uncurry Scale) (scalePacMan,scalePacMan) $
+		ThickCircle (1/4) (1/2)
+	scalePacMan = scaleDown * (min cellWidth cellHeight)
+	scaleDown = 0.7
+	(cellWidth,cellHeight) = posBottomRight <-> origin
+	[origin, posBottomRight] = map (screenPosFromPosF areaOS lab) [(0,0),(1,1)]
+	--ThickCircle (radius/2) radius
+        --radius = vecX $ screenPosFromPosF areaOS lab (0.5, 0)
 
 renderGhosts :: Labyrinth -> [Object] -> AreaOnScreen -> Picture
 renderGhosts lab ghosts areaOS =  Pictures [drawMonsters (ghosts) areaOS]
