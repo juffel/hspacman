@@ -1,6 +1,6 @@
 module Main where
 
-import GameData hiding(Down)
+import GameData
 import LevelGenerator
 import Renderpipeline
 import Vector2D
@@ -26,7 +26,7 @@ main = play
 	display
 	bgColour
 	framerate
-	(startWorld 8)
+	(startWorld 99)
 	--(\x -> Pictures [])
 	(renderWorld fieldArea) -- calls renderWorld from Module Renderpipeline
 	handleInput
@@ -38,8 +38,8 @@ framerate = 40
 
 startWorld seed = World {
     settings = Settings {
-                    --uiState=Menu,
-                    uiState=Playing,
+                    uiState=Menu,
+                    --uiState=Playing,
                     gameState=GameState {level=1,points=0} },
     game = GameData {   labyrinth= genLabyrinth (20,20) 0.95 seed,
                         items=undefined,
@@ -49,7 +49,7 @@ startWorld seed = World {
 handleInput :: Event -> World -> World
 handleInput event world =
     case event of
-    (EventKey key Down _ _) ->
+    (EventKey key G.Down _ _) ->
             case uiState (settings world) of
                 Menu -> case key of
                 -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
@@ -58,19 +58,25 @@ handleInput event world =
                     SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
                     SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
                     SpecialKey KeyEsc -> undefined    -- spiel verlassen-}
-                    Char 's' -> World {
-                        settings = Settings {
-                            uiState=Playing,
-                            gameState=GameState {level=1,points=0}}}
+                    Char 's' -> world {settings = Settings {uiState=Playing}}
+                    Char 'p' -> undefined -- TODO: pause
                     _ -> world --alternative menue
                 Playing -> case key of
-                    Char 'w' -> undefined -- pacman hoch laufen lassen
-                    Char 's' -> undefined -- pacman runter laufen lassen
-                    Char 'a' -> undefined -- pacman nach links laufen lassen
-                    Char 'd' -> undefined -- pacmann nach rechts laufen lassen
+                    Char 'w' -> movePac GameData.Up world
+                    Char 's' -> movePac GameData.Down world
+                    Char 'a' -> movePac GameData.Left world
+                    Char 'd' -> movePac GameData.Right world
                     _ -> world --alternative playing
 
     _ -> world -- ignore other events
 
 moveWorld :: DeltaT-> World -> World
-moveWorld deltaT = id 
+moveWorld deltaT = id
+
+-- kollision bedenken?
+movePac :: Movement -> World -> World
+movePac mov world = case mov of
+     GameData.Up -> undefined
+     GameData.Down -> undefined
+     GameData.Left -> undefined
+     GameData.Right -> undefined
