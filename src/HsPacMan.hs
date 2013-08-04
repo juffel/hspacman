@@ -41,7 +41,7 @@ startWorld seed = World {
     level=1,
     points=0,
     labyrinth=genLabyrinth (30,29) 0.95 seed,
-    pacman=Object{pos=(2.5, 5.5), dirSpeed=(5,0)},
+    pacman=Object{pos=(2.5, 5.5), speed=5, direction=GameData.Right},
     ghosts=undefined,
     dots=undefined,
     fruits=undefined
@@ -76,13 +76,14 @@ setUIState world state = world {uiState = state}
 
 -- |changes the moving direction of the pacman
 setPacDir :: World -> Direction -> World
-setPacDir world dir = case dir of
+{-setPacDir world dir = case dir of
     GameData.Up -> world {pacman = (pacman world) {dirSpeed= (0, -abs)}}
     GameData.Down -> world {pacman = (pacman world) {dirSpeed= (0, abs)}}
     GameData.Left -> world {pacman = (pacman world) {dirSpeed= (-abs, 0)}}
     GameData.Right -> world {pacman = (pacman world) {dirSpeed= (abs, 0)}}
     where
-        abs = vecLength (dirSpeed $ pacman $ world)
+        abs = vecLength (dirSpeed $ pacman $ world) -}
+setPacDir world dir = world {pacman = (pacman world) {direction=dir}}
 
 moveWorld :: DeltaT -> World -> World
 moveWorld deltaT world = manageCollisions $ (movePacman deltaT) $ (moveGhosts deltaT) world
@@ -97,7 +98,16 @@ moveGhosts d world = world
 movePacman :: DeltaT -> World -> World
 movePacman d world = world {pacman= (pacman world) {pos=newPos}}
     where
-        newPos = (pos $ pacman $ world) <+> (d *> (dirSpeed $ pacman $ world))
+        newPos = (pos $ pacman $ world) <+> (d *> dirSpeed)
+        dirSpeed = case (direction $ pacman $ world) of
+            GameData.Up -> (0, -(speed $ pacman $ world))
+            GameData.Down -> (0, (speed $ pacman $ world))
+            GameData.Right-> ((speed $ pacman $ world), 0)
+            GameData.Left -> (-(speed $ pacman $ world), 0)
+
+-- |used to check wether it is possible for a moving object to proceed moving in the current direction
+directionFree :: Labyrinth -> Pos -> Direction -> Bool
+directionFree lab pos dir = True
 
 -- TODO
 manageCollisions :: World -> World

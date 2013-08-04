@@ -41,7 +41,8 @@ data Territory = Free | Wall deriving(Show,Eq)
 
 data Object = Object {
     pos :: PosF,
-    dirSpeed :: SpeedF  -- vector combining speed and direction
+    speed :: Float, 
+    direction :: Direction
 }
 
 type Dot = Object
