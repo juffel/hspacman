@@ -40,7 +40,7 @@ startWorld seed = World {
     uiState=Menu,
     level=1,
     points=0,
-    labyrinth=genLabyrinth (30,20) 0.5 seed,
+    labyrinth=genLabyrinth (30,29) 0.95 seed,
     pacman=Object{pos=(2.5, 5.5), speed=5, direction=GameData.Right},
     ghosts=undefined,
     dots=undefined,
