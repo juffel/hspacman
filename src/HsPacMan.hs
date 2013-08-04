@@ -1,13 +1,14 @@
 module Main where
 
 import GameData
-import LevelGenerator hiding(Down)
+import LevelGenerator
 import Renderpipeline
 import Vector2D
 import Math.Matrix
 
 import Graphics.Gloss hiding(display)
-import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss.Interface.Pure.Game hiding (Down)
+import qualified Graphics.Gloss.Interface.Pure.Game as G
 import qualified Graphics.Gloss as G
 
 windowTitle = "hsPacMan"
@@ -43,8 +44,10 @@ startWorld = World {
 
 handleInput :: Event -> World -> World
 handleInput event world = case event of
-    (EventKey key Down _ _) -> case uiState of
+    (EventKey key G.Down _ _) -> case uiState (settings world) of
         Menu -> case key of
+        -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
+        -- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
             SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
             SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
             SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
