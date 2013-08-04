@@ -7,7 +7,7 @@ import Math.Matrix
 import Prelude hiding(Left,Right)
 
 -- |Directions in Labyrinth
-data Direction = Up | Down | Right | Left deriving(Show,Eq)
+data Direction = Up | Down | Right | Left deriving (Eq, Show)
 -- |Movement on Labyrinth
 type Movement = Direction
 
@@ -16,6 +16,7 @@ type PosF = Vec Float -- logical Position on field
 type Speed = Vec Int -- | movement vector
 type SpeedF = Vec Float
 type Size = Vec Int
+type SizeF = Vec Float
 type Area = (Pos,Size)
 
 type Time = Float

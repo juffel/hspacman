@@ -57,13 +57,13 @@ renderLabyrinth lab areaOnScreen = Pictures $ F.foldr (:)[] $ mapWithIndex drawC
             Free -> Color chartreuse $ drawRectangle p s
             Wall -> Color aquamarine $ drawRectangle p s
             where   p = screenPosFromPos lab (transpose coords) areaOnScreen -- flip!
-                    s = vecI $ screenPosFromPos lab (1,1) areaOnScreen
+                    s = screenPosFromPos lab (1,1) areaOnScreen
 
-drawRectangle :: PosOnScreen -> Size -> Picture 
+drawRectangle :: PosOnScreen -> SizeF -> Picture 
 drawRectangle posOS size = Polygon [  posOS,
-                                    posOS <+> vecF (vecX size,0),
-                                    posOS <+> vecF size,
-                                    posOS <+> vecF (0, vecY size),
+                                    posOS <+> (vecX size,0),
+                                    posOS <+> size,
+                                    posOS <+> (0, vecY size),
                                     posOS ]
 
 -- |converts virtual board coordinates @pos@ on virtual board @lab@ to real screen coordinates on the @areaOnScreen@
