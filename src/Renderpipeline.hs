@@ -3,6 +3,8 @@ module Renderpipeline where
 import GameData
 import LevelGenerator
 import Vector2D
+import Math.Matrix
+import qualified Data.Foldable as F -- enables folds over matrices
 
 import Graphics.Gloss hiding(display)
 import qualified Graphics.Gloss as G
@@ -36,21 +38,26 @@ renderItems :: Items -> AreaOnScreen -> Picture
 renderItems = undefined
 
 renderLabyrinth :: Labyrinth -> AreaOnScreen ->  Picture
-renderLabyrinth lab (posOnScreen, sizeOnScreen) = mapWithIndex drawCell lab
+renderLabyrinth lab areaOnScreen = Pictures $ F.foldr (:)[] $ mapWithIndex drawCell lab
     where
         drawCell :: MatrIndex -> Territory -> Picture
         drawCell coords ter = case ter of
-            Free -> Color white $ drawRectangle (screenPosFromPos coords) (screenPosFromPos size)
-            Wall -> Color black $ drawRectangle (screenPosFromPos coords) (screenPosFromPos size)
+            Free -> Color white $ drawRectangle (screenPosFromPos lab coords areaOnScreen) (vecI (screenPosFromPos lab (1,1) areaOnScreen))
+            Wall -> Color black $ drawRectangle (screenPosFromPos lab coords areaOnScreen) (vecI (screenPosFromPos lab (1,1) areaOnScreen))
 
-drawRectangle :: Pos -> Size -> Picture 
-drawRectangle pos size = Polygon [ pos, pos <+> (VecX size), pos <+> size, pos <+> (vecY size), pos ]
+drawRectangle :: PosOnScreen -> Size -> Picture 
+drawRectangle posOS size = Polygon [  posOS,
+                                    posOS <+> vecF (vecX size,0),
+                                    posOS <+> vecF size,
+                                    posOS <+> vecF (0, vecY size),
+                                    posOS ]
 
 -- |converts virtual board coordinates @pos@ on virtual board @lab@ to real screen coordinates on the @areaOnScreen@
 -- which is usesd by the sub renderfunctions like renderItems, renderCharacters...
 -- so that these sub functions do not need to transfer virtual coordinates to real screen coordinates theirselves
 screenPosFromPos :: Labyrinth -> Pos -> AreaOnScreen -> PosOnScreen
-screenPosFromPos lab pos areaOnScreen@(fPosOnS,fSizeOnS) = fPosOnS <+> (vecF pos </> vecF fieldSize <*> fSizeOnS)
+screenPosFromPos lab pos areaOnScreen@(fPosOnS,fSizeOnS) = fPosOnS <+> (vecF pos </> vecF size <*> fSizeOnS)
+    where   size = (mGetWidth lab, mGetHeight lab)
 
 vecF = fOnVec fromIntegral -- floats parameters
 vecI = fOnVec floor -- integrates parameters using floor
