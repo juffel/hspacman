@@ -1,7 +1,7 @@
 module Main where
 
 import GameData
-import LevelGenerator
+import LevelGenerator hiding(Down)
 import Renderpipeline
 import Vector2D
 import Math.Matrix
@@ -32,7 +32,7 @@ framerate = 40
 startWorld = World {
     settings = Settings {
                     uiState=Menu,
-                    gameState=GameState {level=1,points=1000} },
+                    gameState=GameState {level=1,points=0} },
     game = GameData {
                 labyrinth=undefined,
                 items=undefined,
@@ -40,7 +40,20 @@ startWorld = World {
 }
 
 handleInput :: Event -> World -> World
-handleInput event = id 
+handleInput event world = case event of
+    (EventKey key Down _ _) -> case uiState of
+        Menu -> case key of
+            SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
+            SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
+            SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
+            SpecialKey KeyEsc -> undefined      -- spiel verlassen
+
+        Playing -> case key of
+                Char 'w' -> undefined -- pacman hoch laufen lassen
+                Char 's' -> undefined -- pacman runter laufen lassen
+                Char 'a' -> undefined -- pacman nach links laufen lassen
+                Char 'd' -> undefined -- pacmann nach rechts laufen lassen
+                _ -> world 
 
 moveWorld :: DeltaT-> World -> World
 moveWorld deltaT = id 
