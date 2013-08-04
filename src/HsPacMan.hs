@@ -37,30 +37,21 @@ bgColour = black
 framerate = 40
 
 startWorld seed = World {
-    settings = Settings {
-                    uiState=Menu,
-                    gameState=GameState {level=1,points=0} },
-    game = GameData {
-        labyrinth=genLabyrinth (30,29) 0.95 seed,
-        items=undefined,
-        characters=Characters {
-            pacMan=MovableObj{
-                obj=Object{
-                    objParams=ObjParams{pos=(5,5)},
-                    renderParams=RenderParams{pic=undefined}
-                },
-                movableParams=MovableParams{speed=1}
-            },
-            monsters=[]
-        }
-    }
+    uiState=Menu,
+    level=1,
+    points=0,
+    labyrinth=genLabyrinth (30,29) 0.95 seed,
+    pacman=Object{pos=(2.5, 5.5), dirSpeed=(1,0)},
+    ghosts=undefined,
+    dots=undefined,
+    fruits=undefined
 }
 
 handleInput :: Event -> World -> World
 handleInput event world =
     case event of
     (EventKey key G.Down _ _) ->
-            case uiState (settings world) of
+            case (uiState world) of
                 Menu -> case key of
                 -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
                 -- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
@@ -80,13 +71,25 @@ handleInput event world =
 
     _ -> world -- ignore other events
 
--- |dont look into implementation! it could kill you with its ugliness
--- (blame the record syntax!!!)
 setUIState :: World -> UIState -> World
-setUIState world state = world{ settings= (settings world){ uiState=state } }
+setUIState world state = world {uiState = state}
 
-moveWorld :: DeltaT-> World -> World
-moveWorld deltaT = id
+moveWorld :: DeltaT -> World -> World
+moveWorld deltaT world = manageCollisions $ (movePacman deltaT) $ (moveGhosts deltaT) world
+-- move pacman
+-- move ghosts
+-- check for collisions/item pickups
+
+-- TODO
+moveGhosts :: DeltaT -> World -> World
+moveGhosts d world = world
+
+movePacman :: DeltaT -> World -> World
+movePacman d world = world
+
+-- TODO
+manageCollisions :: World -> World
+manageCollisions world = world
 
 -- kollision bedenken?
 movePac :: Movement -> World -> World

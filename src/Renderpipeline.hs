@@ -14,7 +14,7 @@ type SizeOnScreen = Vec Float
 type AreaOnScreen = (PosOnScreen,SizeOnScreen)
 
 renderWorld :: AreaOnScreen -> World -> Picture
-renderWorld areaOnScreen world = case (uiState $ settings world) of -- check wether the game is currently in status Playing or Menu
+renderWorld areaOnScreen world = case (uiState world) of -- check wether the game is currently in status Playing or Menu
     Playing ->  (uncurry Translate) (i2C areaOnScreen (fromIntegral 0, fromIntegral 0)) $ -- Translation
                 Scale 1 (-1) $ -- flip y-axis
                 renderPlaying areaOnScreen world
@@ -22,11 +22,18 @@ renderWorld areaOnScreen world = case (uiState $ settings world) of -- check wet
     Menu -> renderMenu world
 
 renderPlaying :: AreaOnScreen -> World -> Picture
-renderPlaying areaOnScreen world = Pictures $
-	[renderLabyrinth lab areaOnScreen, renderItems items' areaOnScreen, renderCharacters lab characters' areaOnScreen]
-	where	lab = labyrinth $ game world
-		items' = items $ game world 
-		characters' = characters $ game world
+renderPlaying areaOnScreen world = Pictures [
+    renderLabyrinth lab areaOnScreen,
+    renderDots dotz areaOnScreen,
+    renderFruits fru areaOnScreen,
+    renderPacman lab pac areaOnScreen,
+    renderGhosts lab gho areaOnScreen ]
+	where
+        lab = labyrinth world
+        fru = fruits world 
+        dotz = dots world
+        gho = ghosts world
+        pac = pacman world
 
 renderMenu :: World -> Picture
 renderMenu _ = Pictures [ (Translate (-140) (230) $ Scale 0.5 0.5 $ Color white $ Text "Pa man"),
@@ -36,16 +43,22 @@ renderMenu _ = Pictures [ (Translate (-140) (230) $ Scale 0.5 0.5 $ Color white 
     (Translate (-90) (30) $ Scale 0.25 (0.25) $ Color white $ Text "[s]  Start"),
     (Translate (-90) (-30) $ Scale 0.25 (0.25) $ Color white $ Text "[Esc] Exit")]
 
-renderCharacters :: Labyrinth -> Characters -> AreaOnScreen -> Picture
-renderCharacters lab chars areaOS = Pictures [ drawPacman (pacMan chars) areaOS, drawMonsters (monsters chars) areaOS]
+renderPacman :: Labyrinth -> Object -> AreaOnScreen -> Picture
+renderPacman lab pacman areaOS = Pictures [ drawPacman pacman areaOS ]
     where
-        drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF lab (pos $ objParams $ obj pacman) areaOS) $ Color yellow $ ThickCircle (radius/2) radius
+        drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF lab (pos pacman) areaOS) $ Color yellow $ ThickCircle (radius/2) radius
         radius = vecX $ screenPosFromPosF lab (0.5, 0) areaOS
-        drawMonsters monsters areaOS = Blank -- TODO
+
+renderGhosts :: Labyrinth -> [Object] -> AreaOnScreen -> Picture
+renderGhosts lab ghosts areaOS =  Pictures [drawMonsters (ghosts) areaOS]
+    where   drawMonsters ghosts areaOS = Blank -- TODO
 
 
-renderItems :: Items -> AreaOnScreen -> Picture
-renderItems items areaOS = Blank
+renderFruits :: [Object] -> AreaOnScreen -> Picture
+renderFruits items areaOS = Blank -- TODO
+
+renderDots :: [Object] -> AreaOnScreen -> Picture
+renderDots items areaOS = Blank -- TODO
 
 -- |renders the labMatrix (consisting of fields with values (Wall | Free) ) onto the screen.
 -- Thanks to the Foldable and Monoidic Matrix data type this is done quite intuitively. Like all sub render functions this function uses the @screenPosFromPos@ translation function in order to not care about the actual representation on screen
