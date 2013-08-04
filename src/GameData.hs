@@ -6,10 +6,15 @@ import Math.Matrix
 
 import Prelude hiding(Left,Right)
 
+-- |Directions in Labyrinth
+data Direction = Up | Down | Right | Left
+-- |Movement on Labyrinth
+type Movement = Direction
+
 type Pos = Vec Int -- probably deprecated
 type PosF = Vec Float -- logical Position on field
-type Direction = Vec Int -- probably deprecated
-type DirectionF = Vec Float
+type Speed = Vec Int -- | movement vector
+type SpeedF = Vec Float
 type Size = Vec Int
 type Area = (Pos,Size)
 
@@ -73,8 +78,29 @@ data MovableObj = MovableObj {
 }
 
 data MovableParams = MovableParams {
-	speed :: DirectionF
+	speed :: SpeedF
 }
+
+
+-- realizes a "torus like" behavior for positions on the field
+getNeighbourIndex :: Size -> MatrIndex -> Movement -> MatrIndex
+getNeighbourIndex (width,height) pos@(x,y) dir = case dir of
+	Up -> (x,(y-1) `niceMod` width)
+	--UpRight -> getNeighbourIndex field (getNeighbourIndex field pos Up) Right
+	Right -> ((x+1) `niceMod` height, y)
+	--DownRight -> getNeighbourIndex field (getNeighbourIndex field pos Down) Right
+	Down -> (x,(y+1) `niceMod` width)
+	--DownLeft -> getNeighbourIndex field (getNeighbourIndex field pos Down) Left
+	Left -> ((x-1) `niceMod` height, y)
+	--UpLeft -> getNeighbourIndex field (getNeighbourIndex field pos Up) Left
+	where
+		{-width = mGetWidth field
+		height = mGetHeight field-}
+		niceMod val m = case signum val of
+			(-1) -> niceMod (val+m) m
+			(1) -> val `mod` m
+			(0) -> 0
+			otherwise -> error "niceMod internal error!"
 
 {-data ObjectType = Dot | Fruit
 data MovableObjType = PacMan | Monster-}

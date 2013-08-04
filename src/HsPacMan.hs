@@ -7,7 +7,8 @@ import Vector2D
 import Math.Matrix
 
 import Graphics.Gloss hiding(display)
-import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss.Interface.Pure.Game hiding (Down)
+import qualified Graphics.Gloss.Interface.Pure.Game as G
 import qualified Graphics.Gloss as G
 
 windowTitle = "hsPacMan"
@@ -41,7 +42,7 @@ startWorld = World {
 
 handleInput :: Event -> World -> World
 handleInput event world = case event of
-    (EventKey key Down _ _) -> case uiState (settings world) of
+    (EventKey key G.Down _ _) -> case uiState (settings world) of
         Menu -> case key of
             SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
             SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
