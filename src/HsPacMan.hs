@@ -48,10 +48,14 @@ handleInput event world =
             Menu -> case key of
             -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
             -- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
-                SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
+                {-SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
                 SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
                 SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
-                SpecialKey KeyEsc -> undefined    -- spiel verlassen
+                SpecialKey KeyEsc -> undefined    -- spiel verlassen-}
+                Char 's' -> World {
+                    settings = Settings {
+                        uiState=Playing,
+                        gameState=GameState {level=1,points=0}}}
                 _ -> world 
             Playing -> case key of
                 Char 'w' -> undefined -- pacman hoch laufen lassen
