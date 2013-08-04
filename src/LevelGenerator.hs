@@ -43,8 +43,8 @@ wormBehaviour favDir = do
 	randomDir <- randomDirS favDir 
 	return $ \(mat,pos) -> (Free,calcNewDir randomDir mat pos)
 
-calcNewDir randomDir mat pos = case (mGet pos mat) of
-	Free -> Nothing 
+calcNewDir randomDir mat pos = case (mGet (swap pos) mat) of
+	Free -> Nothing
 	_ -> Just randomDir
 
 opposite :: Direction -> Direction
@@ -55,7 +55,9 @@ opposite Down = Up
 
 -- returns a distribution of directions, given any "favourite" direction:
 randomDirS :: (RandomGen gen) => (Direction,Rational) -> Rand gen Movement
-randomDirS (preference,prob) = fromList $ (preference,prob) : map (\x -> (x,(1 - prob)/2)) (orthogonal preference)
+randomDirS (preference,prob) = fromList $ (preference,prob) :
+	zip (orthogonal preference) (repeat $ (1-prob)/2)
+--map (\x -> (x,(1 - prob)/2)) (orthogonal preference)
 
 orthogonal :: Direction -> [Direction]
 orthogonal d = [ ret | ret<-allDirs, ret/=d, ret/=opposite d ]
@@ -83,8 +85,10 @@ genLabyrinth (width,height) wallRatio seed =
 randomTunnels :: (RandomGen g) => Labyrinth -> Float -> Rand g Labyrinth
 randomTunnels lab wallRatio = if currentWallRatio <= wallRatio then return lab else do
 	randomPos <- fromList $ zip (mGetAllIndex lab) (repeat 1)
+	--let lab' = lab
 	lab' <- boreTunnel randomPos Right lab
-	lab'' <- boreTunnel randomPos Left lab'
+	lab'' <- boreTunnel (randomPos <+> (-1,0)) Left lab'
+	--let lab'' = lab'
 	randomTunnels lab'' wallRatio
 	where
 		currentWallRatio = (fromIntegral countWall) / (fromIntegral $ width*height)

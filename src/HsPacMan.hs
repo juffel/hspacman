@@ -16,16 +16,18 @@ windowPos = (100, 100)  :: PosOnScreen
 windowSize = (800, 600) :: SizeOnScreen
 
 fieldArea = ((0,0),(800,600)) :: AreaOnScreen
-testLab :: Labyrinth
+{-testLab :: Labyrinth
 testLab = mUnsafe [ [Wall, Wall, Free, Wall],
                     [Free, Wall, Free, Wall],
                     [Free, Free, Wall, Wall] ]
+		    -}
 
 main = play
 	display
 	bgColour
 	framerate
-	startWorld
+	(startWorld 8)
+	--(\x -> Pictures [])
 	(renderWorld fieldArea) -- calls renderWorld from Module Renderpipeline
 	handleInput
 	moveWorld
@@ -34,12 +36,12 @@ display = InWindow windowTitle (fOnVec floor windowSize) (fOnVec floor windowPos
 bgColour = black
 framerate = 40
 
-startWorld = World {
+startWorld seed = World {
     settings = Settings {
                     --uiState=Menu,
                     uiState=Playing,
                     gameState=GameState {level=1,points=0} },
-    game = GameData {   labyrinth=testLab,
+    game = GameData {   labyrinth= genLabyrinth (20,20) 0.95 seed,
                         items=undefined,
                         characters=undefined }
 }
