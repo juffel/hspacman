@@ -15,6 +15,8 @@ windowPos = (100, 100)  :: PosOnScreen
 windowSize = (800, 600) :: SizeOnScreen
 
 fieldArea = ((0,0),(800,600)) :: AreaOnScreen
+testLab :: Labyrinth
+testLab = mUnsafe [[Wall, Free, Wall],[Free, Wall, Free],[Wall, Free, Wall]]
 
 main = play
 	display
@@ -34,7 +36,7 @@ startWorld = World {
                     uiState=Menu,
                     gameState=GameState {level=1,points=0} },
     game = GameData {
-                labyrinth=undefined,
+                labyrinth=testLab,
                 items=undefined,
                 characters=undefined}
 }
