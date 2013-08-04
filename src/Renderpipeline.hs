@@ -27,7 +27,7 @@ renderPlaying areaOnScreen world = Pictures $
 		characters' = characters $ game world
 
 renderMenu :: World -> Picture
-renderMenu _ = Pictures [ Text "Pacman - The Menu"  ]
+renderMenu _ = Pictures [ Text "Pacman - The Menu" ]
 
 renderCharacters :: Characters -> AreaOnScreen -> Picture
 renderCharacters chars area = undefined
@@ -37,9 +37,6 @@ renderItems = undefined
 
 renderLabyrinth :: Labyrinth -> AreaOnScreen ->  Picture
 renderLabyrinth labyrinth (posOnScreen, sizeOnScreen) = undefined
-
-handleInput = undefined
-moveWorld = undefined
 
 screenPosFromPos :: Area -> Pos -> AreaOnScreen -> PosOnScreen
 screenPosFromPos (fieldPos,fieldSize) pos (fPosOnS,fSizeOnS) = fPosOnS <+> (vecF pos </> vecF fieldSize <*> fSizeOnS)
