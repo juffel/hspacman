@@ -1,5 +1,7 @@
 module Vector2D where
 
+import Data.Tuple
+
 type Vec a = (a,a)
 
 -- some useful functions for working with vectors:
@@ -27,3 +29,6 @@ scalar *> vec = (scalar * (vecX vec), scalar * (vecY vec))
 (<*) = flip (*>)
 scalar /> vec = (scalar / (vecX vec), scalar / (vecY vec))
 vec </ scalar = ((vecX vec) / scalar, (vecY vec) / scalar)
+
+transpose :: Vec a -> Vec a
+transpose x = swap x 
