@@ -34,33 +34,24 @@ main = play
 
 display = InWindow windowTitle (fOnVec floor windowSize) (fOnVec floor windowPos)
 bgColour = black
-framerate = 40
+framerate = 60
 
 startWorld seed = World {
-    settings = Settings {
-                    uiState=Menu,
-                    gameState=GameState {level=1,points=0} },
-    game = GameData {
-        labyrinth=genLabyrinth (30,50) 0.95 seed,
-        items=undefined,
-        characters=Characters {
-            pacMan=MovableObj{
-                obj=Object{
-                    objParams=ObjParams{pos=(5,5)},
-                    renderParams=RenderParams{pic=undefined}
-                },
-                movableParams=MovableParams{speed=1}
-            },
-            monsters=[]
-        }
-    }
+    uiState=Menu,
+    level=1,
+    points=0,
+    labyrinth=genLabyrinth (30,29) 0.95 seed,
+    pacman=Object{pos=(2.5, 5.5), speed=5, direction=GameData.Right},
+    ghosts=undefined,
+    dots=undefined,
+    fruits=undefined
 }
 
 handleInput :: Event -> World -> World
 handleInput event world =
     case event of
     (EventKey key G.Down _ _) ->
-            case uiState (settings world) of
+            case (uiState world) of
                 Menu -> case key of
                 -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
                 -- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
@@ -72,26 +63,52 @@ handleInput event world =
                     Char 'p' -> undefined -- TODO: pause
                     _ -> world --alternative menue
                 Playing -> case key of
-                    Char 'w' -> movePac GameData.Up world
-                    Char 's' -> movePac GameData.Down world
-                    Char 'a' -> movePac GameData.Left world
-                    Char 'd' -> movePac GameData.Right world
+                    Char 'w' -> setPacDir world GameData.Up
+                    Char 's' -> setPacDir world GameData.Down
+                    Char 'a' -> setPacDir world GameData.Left
+                    Char 'd' -> setPacDir world GameData.Right
                     _ -> world --alternative playing
 
     _ -> world -- ignore other events
 
--- |dont look into implementation! it could kill you with its ugliness
--- (blame the record syntax!!!)
 setUIState :: World -> UIState -> World
-setUIState world state = world{ settings= (settings world){ uiState=state } }
+setUIState world state = world {uiState = state}
 
-moveWorld :: DeltaT-> World -> World
-moveWorld deltaT = id
+-- |changes the moving direction of the pacman
+setPacDir :: World -> Direction -> World
+{-setPacDir world dir = case dir of
+    GameData.Up -> world {pacman = (pacman world) {dirSpeed= (0, -abs)}}
+    GameData.Down -> world {pacman = (pacman world) {dirSpeed= (0, abs)}}
+    GameData.Left -> world {pacman = (pacman world) {dirSpeed= (-abs, 0)}}
+    GameData.Right -> world {pacman = (pacman world) {dirSpeed= (abs, 0)}}
+    where
+        abs = vecLength (dirSpeed $ pacman $ world) -}
+setPacDir world dir = world {pacman = (pacman world) {direction=dir}}
 
--- kollision bedenken?
-movePac :: Movement -> World -> World
-movePac mov world = case mov of
-     GameData.Up -> undefined
-     GameData.Down -> undefined
-     GameData.Left -> undefined
-     GameData.Right -> undefined
+moveWorld :: DeltaT -> World -> World
+moveWorld deltaT world = manageCollisions $ (movePacman deltaT) $ (moveGhosts deltaT) world
+-- move pacman
+-- move ghosts
+-- check for collisions/item pickups
+
+-- TODO
+moveGhosts :: DeltaT -> World -> World
+moveGhosts d world = world
+
+movePacman :: DeltaT -> World -> World
+movePacman d world = world {pacman= (pacman world) {pos=newPos}}
+    where
+        newPos = (pos $ pacman $ world) <+> (d *> dirSpeed)
+        dirSpeed = case (direction $ pacman $ world) of
+            GameData.Up -> (0, -(speed $ pacman $ world))
+            GameData.Down -> (0, (speed $ pacman $ world))
+            GameData.Right-> ((speed $ pacman $ world), 0)
+            GameData.Left -> (-(speed $ pacman $ world), 0)
+
+-- |used to check wether it is possible for a moving object to proceed moving in the current direction
+directionFree :: Labyrinth -> Pos -> Direction -> Bool
+directionFree lab pos dir = True
+
+-- TODO
+manageCollisions :: World -> World
+manageCollisions world = world

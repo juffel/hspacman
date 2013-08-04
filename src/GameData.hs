@@ -13,8 +13,8 @@ type Movement = Direction
 
 type Pos = Vec Int -- probably deprecated
 type PosF = Vec Float -- logical Position on field
-type Speed = Vec Int -- | movement vector
-type SpeedF = Vec Float
+type Speed = Vec Int -- probably deprecated
+type SpeedF = Vec Float -- movement vector
 type Size = Vec Int
 type SizeF = Vec Float
 type Area = (Pos,Size)
@@ -22,6 +22,37 @@ type Area = (Pos,Size)
 type Time = Float
 type DeltaT = Float
 
+data World = World {
+    uiState :: UIState,
+    level :: Level,
+    points :: Points,
+    labyrinth :: Labyrinth,
+    pacman :: Pacman,
+    ghosts :: [Ghost],
+    dots :: [Dot],
+    fruits :: [Fruit]
+}
+
+type Level = Int
+type Points = Int
+
+type Labyrinth = Matrix Territory
+data Territory = Free | Wall deriving(Show,Eq)
+
+data Object = Object {
+    pos :: PosF,
+    speed :: Float, 
+    direction :: Direction
+}
+
+type Dot = Object
+type Fruit = Object
+type Pacman = Object
+type Ghost = Object
+
+data UIState = Playing | Menu
+
+{-
 data World = World {
 	settings :: Settings,
 	game :: GameData
@@ -32,29 +63,26 @@ data Settings = Settings {
 	gameState :: GameState
 }
 
-data UIState = Playing | Menu
 
 data GameState = GameState {
 	level :: Level,
 	points :: Points
-}
+} -}
 
-type Level = Int
-type Points = Int
-
+{-
 data GameData = GameData {
 	labyrinth :: Labyrinth,
 	items :: Items,
 	characters :: Characters
-}
+} -}
 
-type Labyrinth = Matrix Territory
-data Territory = Free | Wall deriving(Show,Eq)
-data Items = Items {
+
+{- data Items = Items {
 	dots :: Object,
 	fruits :: Object
-}
+} -}
 
+{-
 data Characters = Characters {
 	pacMan :: MovableObj,
 	monsters :: [MovableObj]
@@ -76,11 +104,11 @@ data RenderParams = RenderParams {
 data MovableObj = MovableObj {
 	obj :: Object,
 	movableParams :: MovableParams
-}
+} 
 
 data MovableParams = MovableParams {
 	speed :: SpeedF
-}
+} -}
 
 
 -- realizes a "torus like" behavior for positions on the field
