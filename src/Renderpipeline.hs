@@ -27,7 +27,12 @@ renderPlaying areaOnScreen world = Pictures $
 		characters' = characters $ game world
 
 renderMenu :: World -> Picture
-renderMenu _ = Pictures [ Text "Pacman - The Menu" ]
+renderMenu _ = Pictures [ (Translate (-140) (230) $ Scale 0.5 0.5 $ Color white $ Text "Pa man"),
+    (Translate (-36)(248) $ Scale 0.25 (0.25) $ pacmanbase),
+    (Translate (-36)(248) $ Scale 0.25 (0.25) $ moveright),
+    (Translate (-75) (120) $ Scale 0.4 (0.4) $ Color white $ Text "Menu"),
+    (Translate (-90) (30) $ Scale 0.25 (0.25) $ Color white $ Text "[s]  Start"),
+    (Translate (-90) (-30) $ Scale 0.25 (0.25) $ Color white $ Text "[Esc] Exit")]
 
 renderCharacters :: Characters -> AreaOnScreen -> Picture
 renderCharacters chars area = undefined
@@ -49,3 +54,15 @@ i2C :: AreaOnScreen -> PosOnScreen -> PosOnScreen
 i2C (_, sizeOnScreen) (x, y) = (transfX, transfY)
     where   transfX = x -(fst sizeOnScreen)/2 -- simple translation from [0, width] -> [-width/2, +width/2]
             transfY = -(y -(snd sizeOnScreen)/2) -- translation plus flip from [0, height] -> [+height/2, -height/2]
+
+-- pacman
+pacup = map (scale 0.1 0.1) [pacmanbase, moveup]
+pacdown = map (scale 0.1 0.1) [pacmanbase, movedown]
+pacright = map (scale 0.1 0.1) [pacmanbase, moveright]
+pacleft = map (scale 0.1 0.1) [pacmanbase, moveleft]
+pacdemo = map (translate 100 100) pacup ++ map (translate (-100) 100) pacdown ++ map (translate (-100) (-100)) pacleft ++ map (translate (100) (-100)) pacright
+pacmanbase = Color yellow (ThickCircle 40 80)
+moveright = Color black (Polygon [(0,0), (80,(40)), (80,(-40))])
+moveleft = rotate 180 moveright
+moveup = rotate (-90) moveright
+movedown = rotate 90 moveright
