@@ -41,23 +41,29 @@ calcNewMatr randomBeh pos0 matr = do
 wormBehaviour :: (RandomGen g) => (Direction,Rational) -> Rand g (Behaviour Territory)
 wormBehaviour favDir = do
 	randomDir <- randomDirS favDir 
-	return $ \(mat,pos) -> (Free,calcNewDir randomDir mat pos)
+	--nextPos = getNeighbourIndex (width,height) randomDir
+	return $ \(mat,pos) -> (Free,calcNewDir favDir randomDir mat pos)
 
-calcNewDir randomDir mat pos = case (mGet (swap pos) mat) of
-	Free -> Nothing
-	_ -> Just randomDir
+calcNewDir favDir randomDir mat pos =
+	if (mGet (swap pos) mat)/=Free
+	then Just randomDir
+	else Nothing
+		where
+			--[posNext] 
+			--[posL,posR] = map (getNeighbourIndex (mGetWidth matr,mGetHeight matr) pos) (orthogonal favDir)
 
-opposite :: Direction -> Direction
-opposite Left = Right
-opposite Right = Left
-opposite Up = Down
-opposite Down = Up
 
 -- returns a distribution of directions, given any "favourite" direction:
 randomDirS :: (RandomGen gen) => (Direction,Rational) -> Rand gen Movement
 randomDirS (preference,prob) = fromList $ (preference,prob) :
 	zip (orthogonal preference) (repeat $ (1-prob)/2)
 --map (\x -> (x,(1 - prob)/2)) (orthogonal preference)
+
+opposite :: Direction -> Direction
+opposite Left = Right
+opposite Right = Left
+opposite Up = Down
+opposite Down = Up
 
 orthogonal :: Direction -> [Direction]
 orthogonal d = [ ret | ret<-allDirs, ret/=d, ret/=opposite d ]
@@ -84,11 +90,11 @@ genLabyrinth (width,height) wallRatio seed =
 
 randomTunnels :: (RandomGen g) => Labyrinth -> Float -> Rand g Labyrinth
 randomTunnels lab wallRatio = if currentWallRatio <= wallRatio then return lab else do
-	randomPos <- fromList $ zip (mGetAllIndex lab) (repeat 1)
+	randomPos <- fromList $ zip (map swap $ mGetAllIndex lab) (repeat 1)
 	--let lab' = lab
 	lab' <- boreTunnel randomPos Right lab
-	--lab'' <- boreTunnel (randomPos <+> (-1,0)) Left lab'
-	let lab'' = lab'
+	lab'' <- boreTunnel (randomPos <+> (-1,0)) Left lab'
+	--let lab'' = lab'
 	return lab''
 	--randomTunnels lab'' wallRatio
 	where
@@ -98,7 +104,7 @@ randomTunnels lab wallRatio = if currentWallRatio <= wallRatio then return lab e
 		toInt Wall = 1
 		toInt Free = 0
 
-boreTunnel pos0 favDir matr = calcNewMatr (wormBehaviour (favDir,0.9)) pos0 matr
+boreTunnel pos0 favDir matr = calcNewMatr (wormBehaviour (favDir,0.95)) pos0 matr
 
 inBox :: Area -> Pos -> Bool
 inBox (posBox,sizeBox) pos = (pos `vecGOE` posBox) && (pos `vecSOE` (posBox <+> sizeBox))
