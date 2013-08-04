@@ -10,6 +10,7 @@ vecX = fst
 vecY :: Vec a -> a
 vecY = snd
 fOnVec f vec = (f $ vecX vec, f $ vecY vec)
+vecLength (v1, v2) = sqrt $ (v1*v1) + (v2*v2)
 
 -- vector operations:
 infixl 8 <+> -- vector addition
