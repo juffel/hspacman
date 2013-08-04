@@ -16,16 +16,18 @@ windowPos = (100, 100)  :: PosOnScreen
 windowSize = (800, 600) :: SizeOnScreen
 
 fieldArea = ((0,0),(800,600)) :: AreaOnScreen
-testLab :: Labyrinth
+{-testLab :: Labyrinth
 testLab = mUnsafe [ [Wall, Wall, Free, Wall],
                     [Free, Wall, Free, Wall],
                     [Free, Free, Wall, Wall] ]
+		    -}
 
 main = play
 	display
 	bgColour
 	framerate
-	startWorld
+	(startWorld 8)
+	--(\x -> Pictures [])
 	(renderWorld fieldArea) -- calls renderWorld from Module Renderpipeline
 	handleInput
 	moveWorld
@@ -34,18 +36,18 @@ display = InWindow windowTitle (fOnVec floor windowSize) (fOnVec floor windowPos
 bgColour = black
 framerate = 40
 
-startWorld = World {
+startWorld seed = World {
     settings = Settings {
-                    -- uiState=Menu,
-                    uiState=Playing,
+                    uiState=Menu,
                     gameState=GameState {level=1,points=0} },
     game = GameData {
-        labyrinth=testLab,
+        labyrinth=genLabyrinth (30,29) 0.95 seed,
         items=undefined,
         characters=Characters {
             pacMan=MovableObj{
                 obj=Object{
-                    objParams=ObjParams{pos=(5,5)}
+                    objParams=ObjParams{pos=(5,5)},
+                    renderParams=RenderParams{pic=undefined}
                 },
                 movableParams=MovableParams{speed=1}
             },
@@ -66,7 +68,7 @@ handleInput event world =
                     SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
                     SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
                     SpecialKey KeyEsc -> undefined    -- spiel verlassen-}
-                    Char 's' -> startWorld
+                    Char 's' -> setUIState (startWorld 8) Playing
                     _ -> world --alternative menue
                 Playing -> case key of
                     Char 'w' -> undefined -- pacman hoch laufen lassen
@@ -76,6 +78,11 @@ handleInput event world =
                     _ -> world --alternative playing
 
     _ -> world -- ignore other events
+
+-- |dont look into implementation! it could kill you with its ugliness
+-- (blame the record syntax!!!)
+setUIState :: World -> UIState -> World
+setUIState world state = world{ settings= (settings world){ uiState=state } }
 
 moveWorld :: DeltaT-> World -> World
 moveWorld deltaT = id 
