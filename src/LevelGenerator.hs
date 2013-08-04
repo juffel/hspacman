@@ -3,11 +3,15 @@ module LevelGenerator where
 import GameData
 import Vector2D
 import Prelude hiding(Left,Right)
+import Data.Tuple
 
 import Math.Matrix
--- import Control.Monad.State
+--import Numeric.Probability.Distribution
+import Control.Monad.Random
+import System.Random
 
 data Movement = Up | Down | Right | Left
+
 
 {-data State s t = State { runState :: s -> (t,s) }
 instance Monad (State s) where
@@ -20,46 +24,51 @@ instance Monad (State s) where
 			in f2 s0
 -}
 
--- Post -> (Maybe Movement, Pos)
---type PosState a = State (Matrix a, Pos) (a->a, Maybe Movement)
+type View a st = (Matrix a, Pos, st)
+type Behaviour a st = (View a st -> (a,Maybe Movement,st))
 
---squareCloseToTheEdge f border = state $ \(matr,pos) ->
-	--(f (mGet pos), 
-
-
-{-right :: PosState
-right = state $ \pos0 -> (newDir,pos <+> (1,0))
-	where
-		newDir = if vecX pos0 < maxPos then Just Right else Nothing-}
-
-{-mapWithPath :: [PosState ((a->a),Movement) ] -> Matrix a -> Matrix a
-mapWithPath (x:xs) matr = -}
-
-type View a = (Matrix a, Pos)
-type Behaviour a = (View a -> (a,Maybe Movement))
-
-calcNewMatr :: Behaviour a -> Pos -> Matrix a -> Matrix a
-calcNewMatr beh pos0 matr =
+calcNewMatr :: Behaviour a st -> Pos -> Matrix a -> st -> Matrix a
+calcNewMatr beh pos0 matr st =
 	let
-		(newVal,dir) = beh (matr, pos0)
-		newMatr = mSet pos0 newVal matr 
+		(newVal,dir,newSt) = beh (matr, pos0,st)
+		newMatr = mSet (swap pos0) newVal matr 
 	in case dir of 
 		Nothing -> newMatr
-		Just dir' -> calcNewMatr beh newPos newMatr
+		Just dir' -> calcNewMatr beh newPos newMatr newSt
 			where 
 				newPos = getNeighbourIndex (mGetWidth matr, mGetHeight matr) pos0 dir'
 
-makeTunnel :: Pos -> Matrix Territory -> Matrix Territory
-makeTunnel pos0 matr = calcNewMatr beh pos0 matr
+--rndProp 
+
+--type TunnelState = 
+
+makeTunnel :: (RandomGen g) => Rand g Movement -> Pos -> Matrix Territory -> g -> Matrix Territory
+makeTunnel distr pos0 matr gen = calcNewMatr beh pos0 matr gen
 	where
-		beh :: Behaviour Territory
-		beh (matr,pos) = (Free,movement)
+		--beh :: (RandomGen g') => Behaviour Territory g'
+		--beh :: Behaviour Territory g
+		beh (matr,pos,gen') = (Free,movement,newGen)
 			where
 				movement =
+					if (mGet pos matr) == Wall
+					then Just dir
+					else Nothing
+				{-
 					if vecX pos < mGetWidth matr
 					then Just Right
 					else Nothing
-					
+				-}
+				(dir,newGen) = runRand distr gen'
+
+randomList :: (RandomGen gen) => Rand gen Movement
+randomList = fromList [(Up,0.05),(Down,0.05),(Left,0.05),(Right,0.85)]
+
+{-
+-- calculates a list of random values from a given distribution
+weightedList :: RandomGen g => g -> [(a, Rational)] -> [a]
+weightedList gen weights = evalRand m gen
+	where m = sequence . repeat . fromList $ weights
+-}
 
 -- realizes a "torus like" behavior for positions on the field
 getNeighbourIndex :: Size -> MatrIndex -> Movement -> MatrIndex

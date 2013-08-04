@@ -42,7 +42,7 @@ data GameData = GameData {
 }
 
 type Labyrinth = Matrix Territory
-data Territory = Free | Wall deriving(Show)
+data Territory = Free | Wall deriving(Show,Eq)
 data Items = Items {
 	dots :: Object,
 	fruits :: Object
