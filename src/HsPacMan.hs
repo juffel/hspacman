@@ -41,7 +41,7 @@ startWorld seed = World {
     level=1,
     points=0,
     labyrinth=genLabyrinth (30,29) 0.95 seed,
-    pacman=Object{pos=(2.5, 5.5), dirSpeed=(1,0)},
+    pacman=Object{pos=(2.5, 5.5), dirSpeed=(0.1,0)},
     ghosts=undefined,
     dots=undefined,
     fruits=undefined
