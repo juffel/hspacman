@@ -112,9 +112,10 @@ genLabyrinth (width,height) wallRatio seed =
 randomTunnels :: (RandomGen g) => Labyrinth -> Float -> Rand g Labyrinth
 randomTunnels lab wallRatio = if currentWallRatio <= wallRatio then return lab else do
 	randomPos <- fromList $ zip (map swap $ mGetAllIndex lab) (repeat 1)
+	let oneStepLeft = (getNeighbourIndex (mGetWidth lab,mGetHeight lab) randomPos Left)
 	--let lab' = lab
 	lab' <- boreTunnel randomPos Right lab
-	lab'' <- boreTunnel (getNeighbourIndex (mGetWidth lab,mGetHeight lab) randomPos Left) Left lab'
+	lab'' <- boreTunnel oneStepLeft Left lab'
 	--let lab'' = lab'
 	--return lab''
 	randomTunnels lab'' wallRatio

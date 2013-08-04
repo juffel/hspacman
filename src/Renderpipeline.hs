@@ -46,8 +46,8 @@ renderMenu _ = Pictures [ (Translate (-140) (230) $ Scale 0.5 0.5 $ Color white 
 renderPacman :: Labyrinth -> Object -> AreaOnScreen -> Picture
 renderPacman lab pacman areaOS = Pictures [ drawPacman pacman areaOS ]
     where
-        drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF lab (pos pacman) areaOS) $ Color yellow $ ThickCircle (radius/2) radius
-        radius = vecX $ screenPosFromPosF lab (0.5, 0) areaOS
+        drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF areaOS lab (pos pacman) ) $ Color yellow $ ThickCircle (radius/2) radius
+        radius = vecX $ screenPosFromPosF areaOS lab (0.5, 0)
 
 renderGhosts :: Labyrinth -> [Object] -> AreaOnScreen -> Picture
 renderGhosts lab ghosts areaOS =  Pictures [drawMonsters (ghosts) areaOS]
@@ -70,8 +70,8 @@ renderLabyrinth lab areaOnScreen = Pictures $ F.foldr (:)[] $ mapWithIndex drawC
         drawCell coords ter = case ter of
             Free -> Color chartreuse $ drawRectangle p s
             Wall -> Color aquamarine $ drawRectangle p s
-            where   p = screenPosFromPos lab (transpose coords) areaOnScreen -- flip!
-                    s = screenPosFromPos lab (1,1) areaOnScreen
+            where   p = screenPosFromPos areaOnScreen lab (transpose coords) -- flip!
+                    s = screenPosFromPos areaOnScreen lab (1,1) 
 
 drawRectangle :: PosOnScreen -> SizeF -> Picture 
 drawRectangle posOS size = Polygon [  posOS,
@@ -83,14 +83,14 @@ drawRectangle posOS size = Polygon [  posOS,
 -- |converts virtual board coordinates @pos@ on virtual board @lab@ to real screen coordinates on the @areaOnScreen@
 -- which is usesd by the sub renderfunctions like renderItems, renderCharacters...
 -- so that these sub functions do not need to transfer virtual coordinates to real screen coordinates theirselves
-screenPosFromPos :: Labyrinth -> Pos -> AreaOnScreen -> PosOnScreen
+screenPosFromPos :: AreaOnScreen -> Labyrinth -> Pos -> PosOnScreen
 {- screenPosFromPos lab pos areaOnScreen@(fPosOnS,fSizeOnS) = fPosOnS <+> (vecF pos </> vecF size <*> fSizeOnS)
     where   size = (mGetWidth lab, mGetHeight lab) -}
-screenPosFromPos lab pos areaOS = screenPosFromPosF lab (vecF pos) areaOS
+screenPosFromPos areaOS lab pos = screenPosFromPosF areaOS lab (vecF pos) 
 
 -- |same as @screenPosFromPos@ but with input floating tuple
-screenPosFromPosF :: Labyrinth -> PosF -> AreaOnScreen -> PosOnScreen
-screenPosFromPosF lab posF (fPosOS, fSizeOS) = fPosOS <+> (posF </> size <*> fSizeOS)
+screenPosFromPosF :: AreaOnScreen -> Labyrinth -> PosF -> PosOnScreen
+screenPosFromPosF (fPosOS, fSizeOS) lab posF = fPosOS <+> (posF </> size <*> fSizeOS)
     where   size = vecF (mGetWidth lab, mGetHeight lab)
 
 vecF = fOnVec fromIntegral -- floats parameters
