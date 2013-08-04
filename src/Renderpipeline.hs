@@ -36,15 +36,27 @@ renderItems :: Items -> AreaOnScreen -> Picture
 renderItems = undefined
 
 renderLabyrinth :: Labyrinth -> AreaOnScreen ->  Picture
-renderLabyrinth labyrinth (posOnScreen, sizeOnScreen) = undefined
+renderLabyrinth lab (posOnScreen, sizeOnScreen) = mapWithIndex drawCell lab
+    where
+        drawCell :: MatrIndex -> Territory -> Picture
+        drawCell coords ter = case ter of
+            Free -> Color white $ drawRectangle (screenPosFromPos coords) (screenPosFromPos size)
+            Wall -> Color black $ drawRectangle (screenPosFromPos coords) (screenPosFromPos size)
 
-screenPosFromPos :: Area -> Pos -> AreaOnScreen -> PosOnScreen
-screenPosFromPos (fieldPos,fieldSize) pos (fPosOnS,fSizeOnS) = fPosOnS <+> (vecF pos </> vecF fieldSize <*> fSizeOnS)
+drawRectangle :: Pos -> Size -> Picture 
+drawRectangle pos size = Polygon [ pos, pos <+> (VecX size), pos <+> size, pos <+> (vecY size), pos ]
+
+-- |converts virtual board coordinates @pos@ on virtual board @lab@ to real screen coordinates on the @areaOnScreen@
+-- which is usesd by the sub renderfunctions like renderItems, renderCharacters...
+-- so that these sub functions do not need to transfer virtual coordinates to real screen coordinates theirselves
+screenPosFromPos :: Labyrinth -> Pos -> AreaOnScreen -> PosOnScreen
+screenPosFromPos lab pos areaOnScreen@(fPosOnS,fSizeOnS) = fPosOnS <+> (vecF pos </> vecF fieldSize <*> fSizeOnS)
 
 vecF = fOnVec fromIntegral -- floats parameters
 vecI = fOnVec floor -- integrates parameters using floor
 
--- ingame top-left-zero coordinates to gloss centered-zero coordinates
+-- |ingame top-left-zero coordinates to gloss centered-zero coordinates
+-- only used in renderWorld, when finally rendering the world on screen
 i2C :: AreaOnScreen -> PosOnScreen -> PosOnScreen
 i2C (_, sizeOnScreen) (x, y) = (transfX, transfY)
     where   transfX = x -(fst sizeOnScreen)/2 -- simple translation from [0, width] -> [-width/2, +width/2]
