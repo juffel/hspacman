@@ -23,7 +23,7 @@ renderWorld areaOnScreen world = case (uiState $ settings world) of -- check wet
 
 renderPlaying :: AreaOnScreen -> World -> Picture
 renderPlaying areaOnScreen world = Pictures $
-	[renderCharacters characters' areaOnScreen, renderItems items' areaOnScreen, renderLabyrinth lab areaOnScreen]
+	[renderCharacters lab characters' areaOnScreen, renderItems items' areaOnScreen, renderLabyrinth lab areaOnScreen]
 	where	lab = labyrinth $ game world
 		items' = items $ game world 
 		characters' = characters $ game world
@@ -36,8 +36,12 @@ renderMenu _ = Pictures [ (Translate (-140) (230) $ Scale 0.5 0.5 $ Color white 
     (Translate (-90) (30) $ Scale 0.25 (0.25) $ Color white $ Text "[s]  Start"),
     (Translate (-90) (-30) $ Scale 0.25 (0.25) $ Color white $ Text "[Esc] Exit")]
 
-renderCharacters :: Characters -> AreaOnScreen -> Picture
-renderCharacters chars areaOS = Blank
+renderCharacters :: Labyrinth -> Characters -> AreaOnScreen -> Picture
+renderCharacters lab chars areaOS = Pictures [ drawPacman (pacMan chars) areaOS, drawMonsters (monsters chars) areaOS]
+    where
+            drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF lab (pos $ objParams $ obj pacman) areaOS) pacmanbase
+            drawMonsters monsters areaOS = Blank -- TODO
+
 
 renderItems :: Items -> AreaOnScreen -> Picture
 renderItems items areaOS = Blank
@@ -50,8 +54,8 @@ renderLabyrinth lab areaOnScreen = Pictures $ F.foldr (:)[] $ mapWithIndex drawC
         -- in order to display the matrix correctly the lines/columns have to be flipped when drawing
         drawCell :: MatrIndex -> Territory -> Picture
         drawCell coords ter = case ter of
-            Free -> Color white $ drawRectangle p s
-            Wall -> Color black $ drawRectangle p s
+            Free -> Color chartreuse $ drawRectangle p s
+            Wall -> Color aquamarine $ drawRectangle p s
             where   p = screenPosFromPos lab (transpose coords) areaOnScreen -- flip!
                     s = vecI $ screenPosFromPos lab (1,1) areaOnScreen
 
@@ -66,8 +70,14 @@ drawRectangle posOS size = Polygon [  posOS,
 -- which is usesd by the sub renderfunctions like renderItems, renderCharacters...
 -- so that these sub functions do not need to transfer virtual coordinates to real screen coordinates theirselves
 screenPosFromPos :: Labyrinth -> Pos -> AreaOnScreen -> PosOnScreen
-screenPosFromPos lab pos areaOnScreen@(fPosOnS,fSizeOnS) = fPosOnS <+> (vecF pos </> vecF size <*> fSizeOnS)
-    where   size = (mGetWidth lab, mGetHeight lab)
+{- screenPosFromPos lab pos areaOnScreen@(fPosOnS,fSizeOnS) = fPosOnS <+> (vecF pos </> vecF size <*> fSizeOnS)
+    where   size = (mGetWidth lab, mGetHeight lab) -}
+screenPosFromPos lab pos areaOS = screenPosFromPosF lab (vecF pos) areaOS
+
+-- |same as @screenPosFromPos@ but with input floating tuple
+screenPosFromPosF :: Labyrinth -> PosF -> AreaOnScreen -> PosOnScreen
+screenPosFromPosF lab posF (fPosOS, fSizeOS) = fPosOS <+> (posF </> size <*> fSizeOS)
+    where   size = vecF (mGetWidth lab, mGetHeight lab)
 
 vecF = fOnVec fromIntegral -- floats parameters
 vecI = fOnVec floor -- integrates parameters using floor

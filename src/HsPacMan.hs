@@ -36,12 +36,22 @@ framerate = 40
 
 startWorld = World {
     settings = Settings {
-                    --uiState=Menu,
+                    -- uiState=Menu,
                     uiState=Playing,
                     gameState=GameState {level=1,points=0} },
-    game = GameData {   labyrinth=testLab,
-                        items=undefined,
-                        characters=undefined }
+    game = GameData {
+        labyrinth=testLab,
+        items=undefined,
+        characters=Characters {
+            pacMan=MovableObj{
+                obj=Object{
+                    objParams=ObjParams{pos=(5,5)}
+                },
+                movableParams=MovableParams{speed=1}
+            },
+            monsters=[]
+        }
+    }
 }
 
 handleInput :: Event -> World -> World
@@ -56,10 +66,7 @@ handleInput event world =
                     SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
                     SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
                     SpecialKey KeyEsc -> undefined    -- spiel verlassen-}
-                    Char 's' -> World {
-                        settings = Settings {
-                            uiState=Playing,
-                            gameState=GameState {level=1,points=0}}}
+                    Char 's' -> startWorld
                     _ -> world --alternative menue
                 Playing -> case key of
                     Char 'w' -> undefined -- pacman hoch laufen lassen
