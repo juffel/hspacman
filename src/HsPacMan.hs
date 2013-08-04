@@ -85,7 +85,9 @@ moveGhosts :: DeltaT -> World -> World
 moveGhosts d world = world
 
 movePacman :: DeltaT -> World -> World
-movePacman d world = world
+movePacman d world = world {pacman= (pacman world) {pos=newPos}}
+    where
+        newPos = (pos $ pacman $ world) <+> (dirSpeed $ pacman $ world)
 
 -- TODO
 manageCollisions :: World -> World
