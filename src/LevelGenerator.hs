@@ -1,5 +1,5 @@
 module LevelGenerator(
-	--genLabyrinth
+	genLabyrinth
 ) where
 
 import GameData --hiding(Direction)
