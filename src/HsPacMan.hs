@@ -39,10 +39,6 @@ framerate = 40
 startWorld seed = World {
     settings = Settings {
                     uiState=Menu,
-<<<<<<< HEAD
-=======
-                    --uiState=Playing,
->>>>>>> ba4c00d6a79c81fd78f0924d26a26226eeaae2ce
                     gameState=GameState {level=1,points=0} },
     game = GameData {
         labyrinth=genLabyrinth (30,29) 0.95 seed,
@@ -72,12 +68,8 @@ handleInput event world =
                     SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
                     SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
                     SpecialKey KeyEsc -> undefined    -- spiel verlassen-}
-<<<<<<< HEAD
                     Char 's' -> setUIState (startWorld 8) Playing
-=======
-                    Char 's' -> world {settings = Settings {uiState=Playing}}
                     Char 'p' -> undefined -- TODO: pause
->>>>>>> ba4c00d6a79c81fd78f0924d26a26226eeaae2ce
                     _ -> world --alternative menue
                 Playing -> case key of
                     Char 'w' -> movePac GameData.Up world
