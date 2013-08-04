@@ -44,6 +44,8 @@ handleInput :: Event -> World -> World
 handleInput event world = case event of
     (EventKey key G.Down _ _) -> case uiState (settings world) of
         Menu -> case key of
+        -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
+        -- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
             SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
             SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
             SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
