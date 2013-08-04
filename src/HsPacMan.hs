@@ -17,7 +17,9 @@ windowSize = (800, 600) :: SizeOnScreen
 
 fieldArea = ((0,0),(800,600)) :: AreaOnScreen
 testLab :: Labyrinth
-testLab = mUnsafe [[Wall, Free, Wall],[Free, Wall, Free],[Wall, Free, Wall]]
+testLab = mUnsafe [ [Wall, Wall, Free, Wall],
+                    [Free, Wall, Free, Wall],
+                    [Free, Free, Wall, Wall] ]
 
 main = play
 	display
@@ -34,12 +36,12 @@ framerate = 40
 
 startWorld = World {
     settings = Settings {
-                    uiState=Menu,
+                    --uiState=Menu,
+                    uiState=Playing,
                     gameState=GameState {level=1,points=0} },
-    game = GameData {
-                labyrinth=testLab,
-                items=undefined,
-                characters=undefined}
+    game = GameData {   labyrinth=testLab,
+                        items=undefined,
+                        characters=undefined }
 }
 
 handleInput :: Event -> World -> World
@@ -53,12 +55,16 @@ handleInput event world = case event of
             SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
             SpecialKey KeyEsc -> undefined      -- spiel verlassen
 
+            _ -> world -- ignore other things
+
         Playing -> case key of
                 Char 'w' -> undefined -- pacman hoch laufen lassen
                 Char 's' -> undefined -- pacman runter laufen lassen
                 Char 'a' -> undefined -- pacman nach links laufen lassen
                 Char 'd' -> undefined -- pacmann nach rechts laufen lassen
                 _ -> world 
+
+    _ -> world -- ignore other events
 
 moveWorld :: DeltaT-> World -> World
 moveWorld deltaT = id 

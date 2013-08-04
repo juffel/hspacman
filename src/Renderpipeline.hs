@@ -29,21 +29,26 @@ renderPlaying areaOnScreen world = Pictures $
 		characters' = characters $ game world
 
 renderMenu :: World -> Picture
-renderMenu _ = Pictures [ Text "Pacman - The Menu" ]
+renderMenu _ = Color white $ Pictures [ Text "Pacman - The Menu" ]
 
 renderCharacters :: Characters -> AreaOnScreen -> Picture
-renderCharacters chars area = undefined
+renderCharacters chars areaOS = Blank
 
 renderItems :: Items -> AreaOnScreen -> Picture
-renderItems = undefined
+renderItems items areaOS = Blank
 
+-- |renders the labMatrix (consisting of fields with values (Wall | Free) ) onto the screen.
+-- Thanks to the Foldable and Monoidic Matrix data type this is done quite intuitively. Like all sub render functions this function uses the @screenPosFromPos@ translation function in order to not care about the actual representation on screen
 renderLabyrinth :: Labyrinth -> AreaOnScreen ->  Picture
 renderLabyrinth lab areaOnScreen = Pictures $ F.foldr (:)[] $ mapWithIndex drawCell lab
     where
+        -- in order to display the matrix correctly the lines/columns have to be flipped when drawing
         drawCell :: MatrIndex -> Territory -> Picture
         drawCell coords ter = case ter of
-            Free -> Color white $ drawRectangle (screenPosFromPos lab coords areaOnScreen) (vecI (screenPosFromPos lab (1,1) areaOnScreen))
-            Wall -> Color black $ drawRectangle (screenPosFromPos lab coords areaOnScreen) (vecI (screenPosFromPos lab (1,1) areaOnScreen))
+            Free -> Color white $ drawRectangle p s
+            Wall -> Color black $ drawRectangle p s
+            where   p = screenPosFromPos lab (transpose coords) areaOnScreen -- flip!
+                    s = vecI $ screenPosFromPos lab (1,1) areaOnScreen
 
 drawRectangle :: PosOnScreen -> Size -> Picture 
 drawRectangle posOS size = Polygon [  posOS,
