@@ -15,34 +15,45 @@ import System.Random
 
 
 --type View a st = (Matrix a, Pos)
-type View a = (Matrix a, Pos)
+type View st a = (Matrix a, Pos,st)
 --type Behaviour a st = (View a st -> (a,Maybe Movement,st))
-type Behaviour a = (View a -> (a,Maybe Movement))
+type Behaviour st g a = (View st a -> Rand g (a,Maybe Movement,st))
 
 
-oneStep :: Rand g (Behaviour a) -> Pos -> Matrix a -> Rand g ((Matrix a), Maybe Movement)
-oneStep randomBeh pos0 matr = do
-	beh <- randomBeh
-	let
-		(newVal,dir) = beh (matr, pos0)
-		newMatr = mSet (swap pos0) newVal matr 
-	--return (matr,Just Right)
-	return (newMatr,dir)
+oneStep :: (Behaviour st g a) -> Pos -> Matrix a -> st -> Rand g ((Matrix a), Maybe Movement,st)
+oneStep beh pos0 matr st = do
+	(newVal,dir,st') <- beh (matr, pos0,st)
+	let newMatr = mSet (swap pos0) newVal matr 
+	return (newMatr,dir,st')
 
-calcNewMatr randomBeh pos0 matr = do
-	(newMatr, mov) <- oneStep randomBeh pos0 matr
+calcNewMatr randomBeh pos0 matr st = do
+	(newMatr, mov, st') <- oneStep randomBeh pos0 matr st
 	case mov of
 		Nothing -> return newMatr
-		Just dir -> calcNewMatr randomBeh newPos newMatr
+		Just dir -> calcNewMatr randomBeh newPos newMatr st'
 			where
 				newPos = getNeighbourIndex (mGetWidth matr, mGetHeight matr) pos0 dir
 
+data WormStatus = WS {
+	lastDir :: Direction
+}
 
-wormBehaviour :: (RandomGen g) => (Direction,Rational) -> Rand g (Behaviour Territory)
-wormBehaviour favDir = do
-	randomDir <- randomDirS favDir 
+wormBehaviour :: (RandomGen g) => (Direction,Rational) -> (Behaviour WormStatus g Territory)
+wormBehaviour dirAndProp@(favDir,_) (mat,pos,WS{ lastDir=lastDir }) = do
+	--randomDir <- randomDirS favDir 
+	rndDir <- randomDirS dirAndProp
+	return $ (Free,maybeDir rndDir,WS{ lastDir = rndDir })
+	where
+		maybeDir rndDir = if 
+			(mGet (swap forwardPos) mat)/=Free &&
+			(mGet (swap leftPos) mat)/=Free &&
+			(mGet (swap rightPos) mat)/=Free 
+			then Just $ rndDir
+			else Nothing
+		[forwardPos,leftPos,rightPos] = map (getNeighbourIndex (mGetWidth mat,mGetHeight mat) pos) [lastDir, leftOf lastDir, rightOf lastDir]
+
 	--nextPos = getNeighbourIndex (width,height) randomDir
-	return $ \(mat,pos) -> (Free,calcNewDir favDir randomDir mat pos)
+	--return $ \(mat,pos) -> (Free,calcNewDir favDir randomDir mat pos)
 
 calcNewDir favDir randomDir mat pos =
 	if (mGet (swap pos) mat)/=Free
@@ -64,6 +75,16 @@ opposite Left = Right
 opposite Right = Left
 opposite Up = Down
 opposite Down = Up
+
+leftOf Left = Down
+leftOf Up = Left
+leftOf Right = Up
+leftOf Down = Right
+
+rightOf Left = Up
+rightOf Up = Right
+rightOf Right = Down
+rightOf Down = Left
 
 orthogonal :: Direction -> [Direction]
 orthogonal d = [ ret | ret<-allDirs, ret/=d, ret/=opposite d ]
@@ -93,7 +114,7 @@ randomTunnels lab wallRatio = if currentWallRatio <= wallRatio then return lab e
 	randomPos <- fromList $ zip (map swap $ mGetAllIndex lab) (repeat 1)
 	--let lab' = lab
 	lab' <- boreTunnel randomPos Right lab
-	lab'' <- boreTunnel (randomPos <+> (-1,0)) Left lab'
+	lab'' <- boreTunnel (randomPos <+> (-2,0)) Left lab'
 	--let lab'' = lab'
 	return lab''
 	--randomTunnels lab'' wallRatio
@@ -104,7 +125,7 @@ randomTunnels lab wallRatio = if currentWallRatio <= wallRatio then return lab e
 		toInt Wall = 1
 		toInt Free = 0
 
-boreTunnel pos0 favDir matr = calcNewMatr (wormBehaviour (favDir,0.95)) pos0 matr
+boreTunnel pos0 favDir matr = calcNewMatr (wormBehaviour (favDir,0.95)) pos0 matr WS{ lastDir=favDir }
 
 inBox :: Area -> Pos -> Bool
 inBox (posBox,sizeBox) pos = (pos `vecGOE` posBox) && (pos `vecSOE` (posBox <+> sizeBox))
