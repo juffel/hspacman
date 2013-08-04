@@ -23,7 +23,7 @@ renderWorld areaOnScreen world = case (uiState $ settings world) of -- check wet
 
 renderPlaying :: AreaOnScreen -> World -> Picture
 renderPlaying areaOnScreen world = Pictures $
-	[renderCharacters lab characters' areaOnScreen, renderItems items' areaOnScreen, renderLabyrinth lab areaOnScreen]
+	[renderLabyrinth lab areaOnScreen, renderItems items' areaOnScreen, renderCharacters lab characters' areaOnScreen]
 	where	lab = labyrinth $ game world
 		items' = items $ game world 
 		characters' = characters $ game world
@@ -39,8 +39,9 @@ renderMenu _ = Pictures [ (Translate (-140) (230) $ Scale 0.5 0.5 $ Color white 
 renderCharacters :: Labyrinth -> Characters -> AreaOnScreen -> Picture
 renderCharacters lab chars areaOS = Pictures [ drawPacman (pacMan chars) areaOS, drawMonsters (monsters chars) areaOS]
     where
-            drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF lab (pos $ objParams $ obj pacman) areaOS) pacmanbase
-            drawMonsters monsters areaOS = Blank -- TODO
+        drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF lab (pos $ objParams $ obj pacman) areaOS) $ Color yellow $ ThickCircle (radius/2) radius
+        radius = vecX $ screenPosFromPosF lab (0.5, 0) areaOS
+        drawMonsters monsters areaOS = Blank -- TODO
 
 
 renderItems :: Items -> AreaOnScreen -> Picture
