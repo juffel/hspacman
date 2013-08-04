@@ -1,7 +1,7 @@
 module Main where
 
 import GameData
-import LevelGenerator hiding(Down)
+import LevelGenerator
 import Renderpipeline
 import Vector2D
 import Math.Matrix
@@ -41,7 +41,7 @@ startWorld = World {
 
 handleInput :: Event -> World -> World
 handleInput event world = case event of
-    (EventKey key Down _ _) -> case uiState of
+    (EventKey key Down _ _) -> case uiState (settings world) of
         Menu -> case key of
         -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
         -- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
