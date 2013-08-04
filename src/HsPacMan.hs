@@ -41,7 +41,7 @@ startWorld seed = World {
                     uiState=Menu,
                     gameState=GameState {level=1,points=0} },
     game = GameData {
-        labyrinth=genLabyrinth (30,29) 0.95 seed,
+        labyrinth=genLabyrinth (30,50) 0.95 seed,
         items=undefined,
         characters=Characters {
             pacMan=MovableObj{
