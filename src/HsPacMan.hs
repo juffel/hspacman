@@ -41,22 +41,25 @@ startWorld = World {
 }
 
 handleInput :: Event -> World -> World
-handleInput event world = case event of
-    (EventKey key G.Down _ _) -> case uiState (settings world) of
-        Menu -> case key of
-        -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
-        -- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
-            SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
-            SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
-            SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
-            SpecialKey KeyEsc -> undefined      -- spiel verlassen
-
-        Playing -> case key of
+handleInput event world =
+    case event of
+    (EventKey key Down _ _) ->
+        case uiState (settings world) of
+            Menu -> case key of
+            -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
+            -- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
+                SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
+                SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
+                SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
+                SpecialKey KeyEsc -> undefined    -- spiel verlassen
+                _ -> world 
+            Playing -> case key of
                 Char 'w' -> undefined -- pacman hoch laufen lassen
                 Char 's' -> undefined -- pacman runter laufen lassen
                 Char 'a' -> undefined -- pacman nach links laufen lassen
                 Char 'd' -> undefined -- pacmann nach rechts laufen lassen
                 _ -> world 
+    _ -> world 
 
 moveWorld :: DeltaT-> World -> World
 moveWorld deltaT = id 
