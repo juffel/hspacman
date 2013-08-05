@@ -70,26 +70,6 @@ randomDirS (preference,prob) = fromList $ (preference,prob) :
 	zip (orthogonal preference) (repeat $ (1-prob)/2)
 --map (\x -> (x,(1 - prob)/2)) (orthogonal preference)
 
-opposite :: Direction -> Direction
-opposite Left = Right
-opposite Right = Left
-opposite Up = Down
-opposite Down = Up
-
-leftOf Left = Down
-leftOf Up = Left
-leftOf Right = Up
-leftOf Down = Right
-
-rightOf Left = Up
-rightOf Up = Right
-rightOf Right = Down
-rightOf Down = Left
-
-orthogonal :: Direction -> [Direction]
-orthogonal d = [ ret | ret<-allDirs, ret/=d, ret/=opposite d ]
-
-allDirs = [Up,Down,Left,Right]
 
 {-
 -- calculates a list of random values from a given distribution

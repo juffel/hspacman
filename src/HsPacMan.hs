@@ -11,6 +11,9 @@ import Graphics.Gloss.Interface.Pure.Game
 import qualified Graphics.Gloss.Interface.Pure.Game as G
 import qualified Graphics.Gloss as G
 
+import Data.Tuple
+import Data.List
+
 windowTitle = "hsPacMan"
 windowPos = (100, 100)  :: PosOnScreen
 windowSize = (800, 600) :: SizeOnScreen
@@ -40,7 +43,7 @@ startWorld seed = World {
     level=1,
     points=0,
     labyrinth=genLabyrinth (30,20) 0.5 seed,
-    pacman=Object{pos=(2.5, 5.5), size=pacManSize, speed=5, direction=GameData.Right},
+    pacman=Object{pos=(2, 5), size=pacManSize, direction=(0,0)},
     ghosts=undefined,
     dots=undefined,
     fruits=undefined
@@ -64,10 +67,10 @@ handleInput event world =
                     Char 'p' -> undefined -- TODO: pause
                     _ -> world --alternative menue
                 Playing -> case key of
-                    Char 'w' -> setPacDir world GameData.Up
-                    Char 's' -> setPacDir world GameData.Down
-                    Char 'a' -> setPacDir world GameData.Left
-                    Char 'd' -> setPacDir world GameData.Right
+                    Char 'w' -> setPacDir world (directionToSpeed GameData.Up)
+                    Char 's' -> setPacDir world (directionToSpeed GameData.Down)
+                    Char 'a' -> setPacDir world (directionToSpeed GameData.Left)
+                    Char 'd' -> setPacDir world (directionToSpeed GameData.Right)
                     _ -> world --alternative playing
 
     _ -> world -- ignore other events
@@ -76,7 +79,7 @@ setUIState :: World -> UIState -> World
 setUIState world state = world {uiState = state}
 
 -- |changes the moving direction of the pacman
-setPacDir :: World -> Direction -> World
+setPacDir :: World -> SpeedF -> World
 {-setPacDir world dir = case dir of
     GameData.Up -> world {pacman = (pacman world) {dirSpeed= (0, -abs)}}
     GameData.Down -> world {pacman = (pacman world) {dirSpeed= (0, abs)}}
@@ -84,10 +87,11 @@ setPacDir :: World -> Direction -> World
     GameData.Right -> world {pacman = (pacman world) {dirSpeed= (abs, 0)}}
     where
         abs = vecLength (dirSpeed $ pacman $ world) -}
+
 setPacDir world dir = world {pacman = (pacman world) {direction=dir}}
 
 moveWorld :: DeltaT -> World -> World
-moveWorld deltaT world = manageCollisions $ (movePacman deltaT) $ (moveGhosts deltaT) world
+moveWorld deltaT world = (movePacman deltaT) $ (moveGhosts deltaT) world
 -- move pacman
 -- move ghosts
 -- check for collisions/item pickups
@@ -97,19 +101,37 @@ moveGhosts :: DeltaT -> World -> World
 moveGhosts d world = world
 
 movePacman :: DeltaT -> World -> World
-movePacman d world = world {pacman= (pacman world) {pos=newPos}}
-    where
-        newPos = (pos $ pacman $ world) <+> (d *> dirSpeed)
+movePacman d world@World{ pacman=pacMan } =
+	world { pacman=pacMan{ pos=newPos } }
+	where
+		--newPos = pos pacMan <+> direction pacMan <* d
+		newPos = pos pacMan <+> ((fOnVec fromIntegral allowedDir) <* (speeeed * d))
+		speeeed = 5
+		allowedDir = foldl (<+>) (0,0) $ map directionToSpeed $ intersect dirsToTry possibleDirs
+		dirsToTry = speedToDirection $ direction pacMan
+		possibleDirs = possibleDirections (labyrinth world) pacMan
+        {-newPos = (pos $ pacman $ world) <+> (d *> dirSpeed)
         dirSpeed = case (direction $ pacman $ world) of
             GameData.Up -> (0, -(speed $ pacman $ world))
             GameData.Down -> (0, (speed $ pacman $ world))
             GameData.Right-> ((speed $ pacman $ world), 0)
             GameData.Left -> (-(speed $ pacman $ world), 0)
+	-}
+
+possibleDirections :: Labyrinth -> Object -> [Direction]
+possibleDirections lab obj = filter (objCanMoveThere lab obj) allDirs
+
+objCanMoveThere :: Labyrinth -> Object -> Direction -> Bool
+objCanMoveThere lab obj@Object{ pos=pos, size=size } dir =
+	foldl (&&) True $ 
+	map ((==Free) . directionToTerritory lab dir . fOnVec floor) [pos] --[pos,pos+size]
 
 -- |used to check wether it is possible for a moving object to proceed moving in the current direction
-directionFree :: Labyrinth -> Pos -> Direction -> Bool
-directionFree lab pos dir = True
+directionToTerritory :: Labyrinth -> Direction -> Pos -> Territory
+directionToTerritory lab dir pos = mGet (swap newPos) lab
+	where
+		newPos = getNeighbourIndex (mGetWidth lab,mGetHeight lab) pos dir
 
 -- TODO
-manageCollisions :: World -> World
-manageCollisions world = world
+{-manageCollisions :: World -> World
+manageCollisions world = world-}

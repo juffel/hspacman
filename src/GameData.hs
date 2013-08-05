@@ -8,6 +8,28 @@ import Prelude hiding(Left,Right)
 
 -- |Directions in Labyrinth
 data Direction = Up | Down | Right | Left deriving (Eq, Show)
+
+
+opposite :: Direction -> Direction
+opposite Left = Right
+opposite Right = Left
+opposite Up = Down
+opposite Down = Up
+
+leftOf Left = Down
+leftOf Up = Left
+leftOf Right = Up
+leftOf Down = Right
+
+rightOf Left = Up
+rightOf Up = Right
+rightOf Right = Down
+rightOf Down = Left
+
+orthogonal :: Direction -> [Direction]
+orthogonal d = [ ret | ret<-allDirs, ret/=d, ret/=opposite d ]
+
+allDirs = [Up,Down,Left,Right]
 -- |Movement on Labyrinth
 type Movement = Direction
 
@@ -42,8 +64,9 @@ data Territory = Free | Wall deriving(Show,Eq)
 data Object = Object {
     pos :: PosF,
     size :: SizeF,
-    speed :: Float, 
-    direction :: Direction
+    --speed :: Float , 
+    direction :: SpeedF
+    --direction :: Direction
 }
 
 type Dot = Object
@@ -111,6 +134,24 @@ data MovableParams = MovableParams {
 	speed :: SpeedF
 } -}
 
+directionToSpeed Up = (0,-1)
+directionToSpeed Down = (0,1)
+directionToSpeed Left = (-1,0)
+directionToSpeed Right = (1,0)
+
+speedToDirection speed = 
+	let 
+		xDir = case (signum $ vecX speed) of
+			1 -> [Right]
+			(-1) -> [Left]
+			0 -> []
+		yDir = case (signum $ vecY speed) of
+			1 -> [Down]
+			(-1) -> [Up]
+			0 -> []
+	in
+		xDir ++ yDir
+				
 
 -- realizes a "torus like" behavior for positions on the field
 getNeighbourIndex :: Size -> MatrIndex -> Movement -> MatrIndex
@@ -122,7 +163,7 @@ getNeighbourIndex (width,height) pos@(x,y) dir = case dir of
 	Down -> (x,(y+1) `niceMod` height)
 	--DownLeft -> getNeighbourIndex field (getNeighbourIndex field pos Down) Left
 	Left -> ((x-1) `niceMod` width, y)
-	--UpLeft -> getNeighbourIndex field (getNeighbourIndex field pos Up) Left
+--UpLeft -> getNeighbourIndex field (getNeighbourIndex field pos Up) Left
 	where
 		{-width = mGetWidth field
 		height = mGetHeight field-}

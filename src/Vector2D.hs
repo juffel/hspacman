@@ -27,6 +27,7 @@ l <-> r = (vecX l - vecX r,  vecY l - vecY r)
 l <*> r = (vecX l * vecX r,  vecY l * vecY r)
 l </> r = (vecX l / vecX r,  vecY l / vecY r)
 scalar *> vec = (scalar * (vecX vec), scalar * (vecY vec))
+(<*) :: (Num a) => Vec a -> a -> Vec a
 (<*) = flip (*>)
 scalar /> vec = (scalar / (vecX vec), scalar / (vecY vec))
 vec </ scalar = ((vecX vec) / scalar, (vecY vec) / scalar)
