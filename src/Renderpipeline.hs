@@ -46,9 +46,13 @@ renderMenu _ = Pictures [ (Translate (-140) (230) $ Scale 0.5 0.5 $ Color white 
 renderPacman :: Labyrinth -> Object -> AreaOnScreen -> Picture
 renderPacman lab pacman areaOS = Pictures [ drawPacman pacman areaOS ]
     where
-        drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF areaOS lab (pos pacman) ) $ Color yellow $
+        drawPacman pacman areaOS =
+		(uncurry Translate) (
+			screenPosFromPosF areaOS lab (pos pacman) + (cellWidth/2,cellHeight/2)
+		) $ 
 		(uncurry Scale) scalePacMan $
 		-- to do: rotate pacman according to his destination direction
+		Color yellow $
 		ThickArc (-mouthAngle/2) (mouthAngle/2) (1/4) (1/2)
 	mouthAngle = 90
 	scalePacMan = (size pacman) <*> (scale,scale)

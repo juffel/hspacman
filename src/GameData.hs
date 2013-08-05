@@ -146,6 +146,7 @@ directionToSpeed Down = (0,1)
 directionToSpeed Left = (-1,0)
 directionToSpeed Right = (1,0)
 
+speedToDirection :: SpeedF -> [Direction]
 speedToDirection speed = 
 	let 
 		xDir = case (signum $ vecX speed) of
