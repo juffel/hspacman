@@ -41,6 +41,7 @@ data Territory = Free | Wall deriving(Show,Eq)
 
 data Object = Object {
     pos :: PosF,
+    size :: SizeF,
     speed :: Float, 
     direction :: Direction
 }

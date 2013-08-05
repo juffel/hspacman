@@ -40,11 +40,13 @@ startWorld seed = World {
     level=1,
     points=0,
     labyrinth=genLabyrinth (30,20) 0.5 seed,
-    pacman=Object{pos=(2.5, 5.5), speed=5, direction=GameData.Right},
+    pacman=Object{pos=(2.5, 5.5), size=pacManSize, speed=5, direction=GameData.Right},
     ghosts=undefined,
     dots=undefined,
     fruits=undefined
 }
+	where
+		pacManSize = (0.7,0.7)
 
 handleInput :: Event -> World -> World
 handleInput event world =

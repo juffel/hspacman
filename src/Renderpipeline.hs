@@ -47,14 +47,14 @@ renderPacman :: Labyrinth -> Object -> AreaOnScreen -> Picture
 renderPacman lab pacman areaOS = Pictures [ drawPacman pacman areaOS ]
     where
         drawPacman pacman areaOS = (uncurry Translate) (screenPosFromPosF areaOS lab (pos pacman) ) $ Color yellow $
-		(uncurry Scale) (scalePacMan,scalePacMan) $
-		ThickCircle (1/4) (1/2)
-	scalePacMan = scaleDown * (min cellWidth cellHeight)
-	scaleDown = 0.7
+		(uncurry Scale) scalePacMan $
+		-- to do: rotate pacman according to his destination direction
+		ThickArc (-mouthAngle/2) (mouthAngle/2) (1/4) (1/2)
+	mouthAngle = 90
+	scalePacMan = (size pacman) <*> (scale,scale)
+	scale = (min cellWidth cellHeight)
 	(cellWidth,cellHeight) = posBottomRight <-> origin
 	[origin, posBottomRight] = map (screenPosFromPosF areaOS lab) [(0,0),(1,1)]
-	--ThickCircle (radius/2) radius
-        --radius = vecX $ screenPosFromPosF areaOS lab (0.5, 0)
 
 renderGhosts :: Labyrinth -> [Object] -> AreaOnScreen -> Picture
 renderGhosts lab ghosts areaOS =  Pictures [drawMonsters (ghosts) areaOS]
