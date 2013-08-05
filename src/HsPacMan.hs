@@ -19,11 +19,6 @@ windowPos = (100, 100)  :: PosOnScreen
 windowSize = (800, 600) :: SizeOnScreen
 
 fieldArea = ((0,0),(800,600)) :: AreaOnScreen
-{-testLab :: Labyrinth
-testLab = mUnsafe [ [Wall, Wall, Free, Wall],
-                    [Free, Wall, Free, Wall],
-                    [Free, Free, Wall, Wall] ]
-		    -}
 
 main = play
 	display
@@ -80,14 +75,6 @@ setUIState world state = world {uiState = state}
 
 -- |changes the moving direction of the pacman
 setPacDir :: World -> SpeedF -> World
-{-setPacDir world dir = case dir of
-    GameData.Up -> world {pacman = (pacman world) {dirSpeed= (0, -abs)}}
-    GameData.Down -> world {pacman = (pacman world) {dirSpeed= (0, abs)}}
-    GameData.Left -> world {pacman = (pacman world) {dirSpeed= (-abs, 0)}}
-    GameData.Right -> world {pacman = (pacman world) {dirSpeed= (abs, 0)}}
-    where
-        abs = vecLength (dirSpeed $ pacman $ world) -}
-
 setPacDir world dir = world {pacman = (pacman world) {direction=dir}}
 
 moveWorld :: DeltaT -> World -> World
@@ -131,7 +118,3 @@ directionToTerritory :: Labyrinth -> Direction -> Pos -> Territory
 directionToTerritory lab dir pos = mGet (swap newPos) lab
 	where
 		newPos = getNeighbourIndex (mGetWidth lab,mGetHeight lab) pos dir
-
--- TODO
-{-manageCollisions :: World -> World
-manageCollisions world = world-}

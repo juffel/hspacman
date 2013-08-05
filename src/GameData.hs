@@ -60,6 +60,13 @@ type Points = Int
 
 type Labyrinth = Matrix Territory
 data Territory = Free | Wall deriving(Show,Eq)
+instance Enum Territory where
+	toEnum int = case int of
+		0 -> Free
+		1 -> Wall
+	fromEnum ter = case ter of
+		Free -> 0
+		Wall -> 1
 
 data Object = Object {
     pos :: PosF,
