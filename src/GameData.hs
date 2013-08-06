@@ -8,6 +8,8 @@ import Prelude hiding(Left,Right)
 import Data.Fixed
 import Data.Typeable
 
+import System.Random
+
 -- |Directions in Labyrinth
 data Direction = Up | Down | Right | Left deriving (Eq, Show)
 
@@ -89,7 +91,7 @@ data Object objState = Object {
 } deriving(Show)
 
 data GhostState = GhostState {
-
+	rndState :: StdGen
 } deriving(Show)
 
 type Dot = Object ()

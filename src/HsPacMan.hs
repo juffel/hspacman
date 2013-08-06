@@ -5,6 +5,7 @@ import LevelGenerator
 import Renderpipeline
 import Vector2D
 import Math.Matrix
+import RandomUtils
 
 import Prelude hiding(Left,Right)
 
@@ -14,6 +15,9 @@ import Graphics.Gloss hiding(display)
 import Graphics.Gloss.Interface.Pure.Game hiding(Up,Down)
 import qualified Graphics.Gloss.Interface.Pure.Game as G
 import qualified Graphics.Gloss as G
+
+import System.Random
+import Control.Monad.Random
 
 import Data.Tuple
 import Data.List
@@ -50,7 +54,7 @@ startWorld seed = World {
 	where
 		pacManSize = (0.7,0.7)
 		ghosts = [
-			Object{ pos=(19,20), size=pacManSize, direction=(0,0), t=0, state=GhostState {} }]
+			Object{ pos=(0,0), size=pacManSize, direction=(0,0), t=0, state=GhostState { rndState= mkStdGen seed } }]
 
 handleInput :: Event -> World -> World
 handleInput event world = case event of
@@ -101,14 +105,24 @@ moveWorld deltaT world = (movePacman deltaT) $ (moveGhosts deltaT) world
 moveGhosts :: DeltaT -> World -> World
 moveGhosts dt world =
 	world{
-		ghosts= map (moveCharacter dt world . setDirection world) (ghosts world)
+		ghosts= map (moveCharacter dt world . setDirection world) (ghosts world),
+		dbgInfo=DbgInf{ info= show $ possibleDirections (labyrinth world) dt (head $ ghosts world ) }
 	}
 	where
 		--monsterSpeed = (fromIntegral $ level world)
 		-- this function is the ai for the ghosts
 		setDirection :: World -> Ghost -> Ghost
-		setDirection world ghost = ghost{ direction= direction pacManObj }
-		pacManObj= pacman world
+		setDirection world ghost = ghost{
+			direction= direction $ pacman world,
+			--direction= fOnVec fromIntegral $ directionsToSpeed [newDir],
+			state = state ghost
+			--state = GhostState{ rndState=newRndState }
+		}
+			where
+				(newDir,newRndState) = runRand rndDir (rndState $ state ghost)
+				rndDir = randomDirS possibleDirs [(head $ speedToDirection $ direction ghost,0.98)]
+				possibleDirs = possibleDirections (labyrinth world) dt ghost
+				pacManObj= pacman world
 
 
 movePacman :: DeltaT -> World -> World
@@ -138,9 +152,9 @@ moveCharacter dt world obj = obj{ pos=newPos, t= (t obj + dt) }
 					labSize = fOnVec fromIntegral (mGetWidth lab -1,mGetHeight lab -1)
 					lab = labyrinth world
 
-
-possibleDirections lab deltaT obj = filter (not . willCollide lab deltaT) $
-	map ((\x -> obj{ direction= x }) . directionToSpeed) $ allDirs
+possibleDirections :: Labyrinth -> DeltaT -> Object st -> [Direction]
+possibleDirections lab deltaT obj = filter (not . willCollide lab deltaT . (\x -> obj{ direction= x }) . directionToSpeed) $
+	allDirs
 
 willCollide lab deltaT obj = or $ map (willPointCollide lab deltaT (direction obj)) $
 	[ p , p <+> (0,h), p <+> (w,h), p <+> (w,0) ]

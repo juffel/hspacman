@@ -4,6 +4,7 @@ module LevelGenerator(
 
 import GameData --hiding(Direction)
 import Vector2D
+import RandomUtils
 import Prelude hiding(Left,Right)
 import Data.Tuple
 import qualified Data.Foldable as F
@@ -82,7 +83,7 @@ data WormStatus = WS {
 -}
 wormBehaviour :: (RandomGen g) => (Direction,Rational) -> (Behaviour WormStatus g Territory)
 wormBehaviour dirAndProp@(favDir,_) (mat,pos,WS{ lastDir=lastDir }) = do
-	rndDir <- randomDirS dirAndProp
+	rndDir <- randomDirS (favDir:(orthogonal favDir)) [dirAndProp]
 	return $ (Free,maybeDir rndDir,WS{ lastDir = rndDir })
 	where
 		maybeDir rndDir = if 
@@ -92,12 +93,6 @@ wormBehaviour dirAndProp@(favDir,_) (mat,pos,WS{ lastDir=lastDir }) = do
 			then Just $ rndDir
 			else Nothing
 		[forwardPos,leftPos,rightPos] = map (movePoint (mGetWidth mat,mGetHeight mat) pos . directionToSpeed) [lastDir, leftOf lastDir, rightOf lastDir]
-
-
--- returns a distribution of directions, given any "favourite" direction:
-randomDirS :: (RandomGen gen) => (Direction,Rational) -> Rand gen Movement
-randomDirS (preference,prob) = fromList $ (preference,prob) :
-	zip (orthogonal preference) (repeat $ (1-prob)/2)
 
 
 {-
