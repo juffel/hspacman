@@ -112,8 +112,8 @@ renderLabyrinth wSize destArea cellSize lab = Pictures $ F.foldr (:)[] $ mapWith
 		drawCell :: MatrIndex -> Territory -> Picture
 		drawCell coords = drawCell' (swap coords)
 		drawCell' coords ter = case ter of
-			Free -> Color white $ Polygon $ rect posCell sizeCell
-			Wall -> Color black $ Polygon $ rect posCell sizeCell
+			Free -> Color (greyN 0.8) $ Polygon $ rect posCell sizeCell
+			Wall -> Color (greyN 0.2) $ Polygon $ rect posCell sizeCell
 	    		where
 				posCell = posFromCoords coords
 				sizeCell= posFromCoords (coords <+> (1,1)) <-> posCell

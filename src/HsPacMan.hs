@@ -33,7 +33,7 @@ main = play
 
 display = InWindow windowTitle (fOnVec floor windowSize) (fOnVec floor windowPos)
 bgColour = black
-framerate = 60
+framerate = 40
 
 startWorld seed = World {
     uiState=Menu,
@@ -50,7 +50,7 @@ startWorld seed = World {
 	where
 		pacManSize = (0.7,0.7)
 		ghosts = [
-			Object{ pos=(19,20), size=pacManSize, direction=(0.1,0.1), t=0 }]
+			Object{ pos=(19,20), size=pacManSize, direction=(0,0), t=0 }]
 
 handleInput :: Event -> World -> World
 handleInput event world = case event of
