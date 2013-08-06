@@ -37,13 +37,15 @@ startWorld seed = World {
     points=0,
     labyrinth=genLabyrinth (30,20) 0.5 seed,
     pacman=Object{pos=(1, 1), size=pacManSize, direction=(0,0), t=0 },
-    ghosts=undefined,
+    ghosts=ghosts,
     dots=undefined,
     fruits=undefined,
     dbgInfo = DbgInf{ info = "test\ntest" }
 }
 	where
 		pacManSize = (0.7,0.7)
+		ghosts = [
+			Object{ pos=(19,20), size=pacManSize, direction=(1,1), t=0 }]
 
 handleInput :: Event -> World -> World
 handleInput event world =
@@ -81,24 +83,36 @@ moveWorld :: DeltaT -> World -> World
 moveWorld deltaT world = (movePacman deltaT) $ (moveGhosts deltaT) world
 
 moveGhosts :: DeltaT -> World -> World
-moveGhosts d world = world
+moveGhosts dt world =
+	world{
+		ghosts= map (moveCharacter dt world monsterSpeed) (ghosts world)
+	}
+	where
+		monsterSpeed = (fromIntegral $ level world)
 
 movePacman :: DeltaT -> World -> World
-movePacman d world@World{ pacman=pacMan } =
-	world { pacman=pacMan{ pos=newPos, t=(t pacMan + d) }, dbgInfo=DbgInf{ info=dbgText} }
+movePacman dt world@World{ pacman=pacMan } =
+	world {
+		pacman=moveCharacter dt world speed pacMan--,
+		--dbgInfo=DbgInf{ info=dbgText} }
+	}
 	where
-		--newPos = pos pacMan <+> direction pacMan <* d
-		dbgText =
+		{-dbgText =
 			"pos pacMan: " ++ (show $ fOnVec floor $ pos pacMan) ++ "\n" ++
 			"pos pacMan exact: " ++ (show $ pos pacMan) ++ "\n" {-++
-			"possibleDirs: " ++ show possibleDirs-}
-		newPos = if (willCollide (labyrinth world) speed d pacMan)
-			then pos pacMan
-			else (pointInSizeF labSize $ pos pacMan <+> (direction pacMan) <* (speed * d)) -- pointInSize: torus
+			"possibleDirs: " ++ show possibleDirs-} -}
+		speed = 2
+
+moveCharacter :: DeltaT -> World -> Float -> Object -> Object
+moveCharacter dt world speed obj = obj{ pos=newPos, t= (t obj + dt) }
+	where
+		
+		newPos = if (willCollide (labyrinth world) speed dt obj)
+			then pos obj
+			else (pointInSizeF labSize $ pos obj <+> (direction obj) <* (speed * dt)) -- pointInSize: torus
 				where
 					labSize = fOnVec fromIntegral (mGetWidth lab -1,mGetHeight lab -1)
 					lab = labyrinth world
-		speed = 2
 
 
 willCollide lab speed deltaT obj = or $ map (willPointCollide lab speed deltaT (direction obj)) $

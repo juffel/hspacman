@@ -57,7 +57,8 @@ renderGameArea :: WindowSize -> DestAreaOnScreen -> World -> Picture
 renderGameArea wSize destArea world = Pictures [
 	Color white $ Line (fmap (normalizedPosToGloss wSize destArea) $ rect (0,0) (1,1)),
 	renderLabyrinth wSize destArea cellSize (labyrinth world),
-	renderPacMan wSize destArea cellSize (pacman world)]
+	renderPacMan wSize destArea cellSize (pacman world),
+	renderGhosts wSize destArea cellSize (ghosts world) ]
 	where
 		cellSize :: SizeF
 		cellSize = (1,1) </> (fromIntegral $ mGetWidth lab, fromIntegral $ mGetHeight lab)
@@ -66,15 +67,41 @@ renderGameArea wSize destArea world = Pictures [
 
 renderPacMan :: WindowSize -> DestAreaOnScreen -> SizeF -> Pacman -> Picture
 renderPacMan wSize gameArea@(fieldPos,fieldSize) cellSize pacman =
-	(uncurry Translate) (normalizedPosToGloss wSize gameArea (cellSize <*> (pos pacman))) $
-	(uncurry Scale) (size pacman) $
-	(uncurry Scale) (normalizedPosToScreen gameArea cellSize <-> normalizedPosToScreen gameArea (0,0)) $
+	renderChar wSize gameArea cellSize pacman $
 	Translate (1/2) (-1/2) $
 	Color yellow $
 	--Rotate 90 $ -- roation doesn't work due to a bug in gloss!!
 	ThickArc (mouthAngle/2) (-mouthAngle/2) (1/4) (1/2)
 	where
 		mouthAngle = 90 * (sin $ 5 * t pacman)
+
+renderGhosts :: WindowSize -> DestAreaOnScreen -> SizeF -> [Ghost] -> Picture
+renderGhosts wSize gameArea@(fieldPos,fieldSize) cellSize ghosts = Pictures $ map (renderGhost wSize gameArea cellSize) ghosts
+	
+	
+renderGhost :: WindowSize -> DestAreaOnScreen -> SizeF -> Ghost -> Picture
+renderGhost wSize gameArea@(fieldPos,fieldSize) cellSize ghost = renderChar wSize gameArea cellSize ghost$
+	Translate (1/2) (-1/2) $
+	Color green $
+	(Polygon $ rect (0,0) (1,1))
+	where
+		mouthAngle = 90 * (sin $ 5 * t ghost)
+
+
+renderChar :: WindowSize -> DestAreaOnScreen -> SizeF -> Object -> Picture -> Picture
+renderChar wSize gameArea@(fieldPos,fieldSize) cellSize obj pic =
+	(uncurry Translate) (normalizedPosToGloss wSize gameArea (cellSize <*> (pos obj))) $
+	(uncurry Scale) (size obj) $
+	(uncurry Scale) (normalizedPosToScreen gameArea cellSize <-> normalizedPosToScreen gameArea (0,0)) $
+	pic
+	{-Translate (1/2) (-1/2) $
+	Color yellow $
+	--Rotate 90 $ -- roation doesn't work due to a bug in gloss!!
+	ThickArc (mouthAngle/2) (-mouthAngle/2) (1/4) (1/2)
+	where
+		mouthAngle = 90 * (sin $ 5 * t obj)-}
+
+
 
 
 renderLabyrinth :: WindowSize -> DestAreaOnScreen -> SizeF -> Labyrinth -> Picture
