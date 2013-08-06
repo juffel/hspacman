@@ -100,7 +100,10 @@ movePacman d world@World{ pacman=pacMan } =
 			"possibleDirs: " ++ show possibleDirs-}
 		newPos = if (willCollide (labyrinth world) speed d pacMan)
 			then pos pacMan
-			else pos pacMan <+> (direction pacMan) <* (speed * d)
+			else (pointInSizeF labSize $ pos pacMan <+> (direction pacMan) <* (speed * d))
+				where
+					labSize = fOnVec fromIntegral (mGetWidth lab -1,mGetHeight lab -1)
+					lab = labyrinth world
 		speed = 2
 		{-newPos = pos pacMan <+> ((fOnVec fromIntegral allowedDir) <* (speeeed * d))
 		speeeed = 2
@@ -114,20 +117,22 @@ movePacman d world@World{ pacman=pacMan } =
             GameData.Right-> ((speed $ pacman $ world), 0)
             GameData.Left -> (-(speed $ pacman $ world), 0)
 	-}
-willPointCollide lab speed deltaT dir oldPos = (==Wall) $ mGet (calcMatrIndex nextPos) lab 
-	where
-		calcMatrIndex :: PosF -> MatrIndex
-		calcMatrIndex nextPos = swap $
-			fOnVec floor $
-			pointInSizeF (fromIntegral $ mGetWidth lab, fromIntegral $ mGetHeight lab) nextPos -- torus
-		nextPos = (oldPos <+> dir <* (speed * deltaT))
-		--[oldPos,dir] = [pos obj, direction obj]
+
 
 willCollide lab speed deltaT obj = or $ map (willPointCollide lab speed deltaT (direction obj)) $
 	[ p , p <+> (0,h), p <+> (w,h), p <+> (w,0) ]
 	where
 		p = pos obj
 		(w,h) = size obj
+
+willPointCollide lab speed deltaT dir oldPos = (==Wall) $ mGet (calcMatrIndex nextPos) lab 
+	where
+		calcMatrIndex :: PosF -> MatrIndex
+		calcMatrIndex nextPos = swap $
+			fOnVec floor $
+			pointInSizeF (fromIntegral $ mGetWidth lab -1, fromIntegral $ mGetHeight lab -1) nextPos -- torus
+		nextPos = (oldPos <+> dir <* (speed * deltaT))
+		--[oldPos,dir] = [pos obj, direction obj]
 
 {-possibleDirections :: Labyrinth -> Object -> [Direction]
 possibleDirections lab obj = filter (objCanMoveThere lab obj) allDirs
