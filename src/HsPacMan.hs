@@ -96,13 +96,17 @@ movePacman d world@World{ pacman=pacMan } =
 		--newPos = pos pacMan <+> direction pacMan <* d
 		dbgText =
 			"pos pacMan: " ++ (show $ fOnVec floor $ pos pacMan) ++ "\n" ++
-			"pos pacMan exact: " ++ (show $ pos pacMan) ++ "\n" ++
-			"possibleDirs: " ++ show possibleDirs
-		newPos = pos pacMan <+> ((fOnVec fromIntegral allowedDir) <* (speeeed * d))
+			"pos pacMan exact: " ++ (show $ pos pacMan) ++ "\n" {-++
+			"possibleDirs: " ++ show possibleDirs-}
+		newPos = if (willCollide (labyrinth world) speed d pacMan)
+			then pos pacMan
+			else pos pacMan <+> (direction pacMan) <* (speed * d)
+		speed = 2
+		{-newPos = pos pacMan <+> ((fOnVec fromIntegral allowedDir) <* (speeeed * d))
 		speeeed = 2
 		allowedDir = foldl (<+>) (0,0) $ map directionToSpeed $ intersect dirsToTry possibleDirs
 		dirsToTry = speedToDirection $ direction pacMan
-		possibleDirs = possibleDirections (labyrinth world) pacMan
+		possibleDirs = possibleDirections (labyrinth world) pacMan-}
         {-newPos = (pos $ pacman $ world) <+> (d *> dirSpeed)
         dirSpeed = case (direction $ pacman $ world) of
             GameData.Up -> (0, -(speed $ pacman $ world))
@@ -110,8 +114,22 @@ movePacman d world@World{ pacman=pacMan } =
             GameData.Right-> ((speed $ pacman $ world), 0)
             GameData.Left -> (-(speed $ pacman $ world), 0)
 	-}
+willPointCollide lab speed deltaT dir oldPos = (==Wall) $ mGet (calcMatrIndex nextPos) lab 
+	where
+		calcMatrIndex :: PosF -> MatrIndex
+		calcMatrIndex nextPos = swap $
+			fOnVec floor $
+			pointInSizeF (fromIntegral $ mGetWidth lab, fromIntegral $ mGetHeight lab) nextPos -- torus
+		nextPos = (oldPos <+> dir <* (speed * deltaT))
+		--[oldPos,dir] = [pos obj, direction obj]
 
-possibleDirections :: Labyrinth -> Object -> [Direction]
+willCollide lab speed deltaT obj = or $ map (willPointCollide lab speed deltaT (direction obj)) $
+	[ p , p <+> (0,h), p <+> (w,h), p <+> (w,0) ]
+	where
+		p = pos obj
+		(w,h) = size obj
+
+{-possibleDirections :: Labyrinth -> Object -> [Direction]
 possibleDirections lab obj = filter (objCanMoveThere lab obj) allDirs
 
 objCanMoveThere :: Labyrinth -> Object -> Direction -> Bool
@@ -125,3 +143,4 @@ directionToTerritory :: Labyrinth -> Direction -> Pos -> Territory
 directionToTerritory lab dir pos = mGet (swap newPos) lab
 	where
 		newPos = movePoint (mGetWidth lab,mGetHeight lab) pos (directionToSpeed dir)
+		-}
