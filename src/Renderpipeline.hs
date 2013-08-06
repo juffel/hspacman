@@ -89,7 +89,7 @@ renderGhost wSize gameArea@(fieldPos,fieldSize) cellSize ghost = renderChar wSiz
 		mouthAngle = 90 * (sin $ 5 * t ghost)
 
 
-renderChar :: WindowSize -> DestAreaOnScreen -> SizeF -> Object -> Picture -> Picture
+renderChar :: WindowSize -> DestAreaOnScreen -> SizeF -> Object st -> Picture -> Picture
 renderChar wSize gameArea@(fieldPos,fieldSize) cellSize obj pic =
 	(uncurry Translate) (normalizedPosToGloss wSize gameArea (cellSize <*> (pos obj))) $
 	(uncurry Scale) (size obj) $

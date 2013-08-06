@@ -39,8 +39,8 @@ startWorld seed = World {
     uiState=Menu,
     level=1,
     points=0,
-    labyrinth=genLabyrinth (30,20) 0.4 seed,
-    pacman=Object{pos=(1, 1), size=pacManSize, direction=(0,0), t=0 },
+    labyrinth=genLabyrinth (40,30) 0.4 seed,
+    pacman=Object{pos=(1, 1), size=pacManSize, direction=(0,0), t=0, state=() },
     ghosts=ghosts,
     dots=undefined,
     fruits=undefined,
@@ -50,7 +50,7 @@ startWorld seed = World {
 	where
 		pacManSize = (0.7,0.7)
 		ghosts = [
-			Object{ pos=(19,20), size=pacManSize, direction=(0,0), t=0 }]
+			Object{ pos=(19,20), size=pacManSize, direction=(0,0), t=0, state=GhostState {} }]
 
 handleInput :: Event -> World -> World
 handleInput event world = case event of
@@ -127,7 +127,7 @@ movePacman dt world@World{ pacman=pacMan } =
 			"possibleDirs: " ++ show possibleDirs-} -}
 		speed = 2
 
-moveCharacter :: DeltaT -> World -> Object -> Object
+moveCharacter :: DeltaT -> World -> Object st -> Object st
 moveCharacter dt world obj = obj{ pos=newPos, t= (t obj + dt) }
 	where
 		
@@ -138,6 +138,9 @@ moveCharacter dt world obj = obj{ pos=newPos, t= (t obj + dt) }
 					labSize = fOnVec fromIntegral (mGetWidth lab -1,mGetHeight lab -1)
 					lab = labyrinth world
 
+
+possibleDirections lab deltaT obj = filter (not . willCollide lab deltaT) $
+	map ((\x -> obj{ direction= x }) . directionToSpeed) $ allDirs
 
 willCollide lab deltaT obj = or $ map (willPointCollide lab deltaT (direction obj)) $
 	[ p , p <+> (0,h), p <+> (w,h), p <+> (w,0) ]

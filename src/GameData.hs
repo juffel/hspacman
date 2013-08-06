@@ -78,19 +78,24 @@ instance Enum Territory where
 		Free -> 0
 		Wall -> 1
 
-data Object = Object {
+data Object objState = Object {
 	pos :: PosF,
 	size :: SizeF,
 	--speed :: Float , 
 	direction :: SpeedF,
-	t :: Time
+	t :: Time,
+	state :: objState
 	--direction :: Direction
 } deriving(Show)
 
-type Dot = Object
-type Fruit = Object
-type Pacman = Object
-type Ghost = Object
+data GhostState = GhostState {
+
+} deriving(Show)
+
+type Dot = Object ()
+type Fruit = Object ()
+type Pacman = Object ()
+type Ghost = Object GhostState
 
 data UIState = Playing | Menu deriving(Show)
 
