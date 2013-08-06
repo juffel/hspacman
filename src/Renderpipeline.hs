@@ -13,6 +13,7 @@ import qualified Graphics.Gloss as G
 -- used to represent coordinates relative to an area on the screen:
 -- (0,0)..(1,1)
 type NormalCoords = Vec Float
+type NormalSize = Vec Float
 
 
 -- origin is the upper left corner of the screen (x-Axis right, y-Axis dowdown
@@ -63,12 +64,15 @@ renderLabyrinth wSize destArea lab = Pictures $ F.foldr (:)[] $ mapWithIndex dra
 		drawCell :: MatrIndex -> Territory -> Picture
 		drawCell coords = drawCell' (swap coords)
 		drawCell' coords ter = case ter of
-			Free -> Color white $ Polygon $ [ pos, pos<+>(0,hCell), pos<+>(wCell,hCell), pos<+>(wCell,0), pos ]
-			Wall -> Color black $ Polygon $ [ pos, pos<+>(0,hCell), pos<+>(wCell,hCell), pos<+>(wCell,0), pos ]
+			Free -> Color white $ Polygon $ rect posCell sizeCell
+			Wall -> Color black $ Polygon $ rect posCell sizeCell
 	    		where
-				pos = posFromCoords coords
+				posCell = posFromCoords coords
+				sizeCell= posFromCoords (coords <+> (1,1)) <-> posCell
 				posFromCoords coords = normalizedPosToGloss wSize destArea $ fOnVec fromIntegral coords </> (fromIntegral $ mGetWidth lab, fromIntegral $ mGetHeight lab)
-				(wCell,hCell) = posFromCoords (coords <+> (1,1)) <-> pos
+
+rect :: NormalCoords -> NormalSize -> [NormalCoords]
+rect pos (w,h) = [ pos, pos<+>(0,h), pos<+>(w,h), pos<+>(w,0), pos ]
 
 {-Color green $ Polygon $
 map (normalizedPosToGloss wSize destArea) [(0,0),(0,1),(1,1),(1,0),(0,0)]-}
