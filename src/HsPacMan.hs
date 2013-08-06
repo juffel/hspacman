@@ -18,14 +18,14 @@ windowTitle = "hsPacMan"
 windowPos = (100, 100)  :: PosOnScreen
 windowSize = (800, 600) :: SizeOnScreen
 
-fieldArea = ((0,0),(800,600)) :: AreaOnScreen
+--fieldArea = ((0,0),(800,600)) :: AreaOnScreen
 
 main = play
 	display
 	bgColour
 	framerate
 	(startWorld 2)
-	(renderWorld fieldArea) -- calls renderWorld from Module Renderpipeline
+	(renderWorld windowSize) -- calls renderWorld from Module Renderpipeline
 	handleInput
 	moveWorld
 
@@ -38,10 +38,11 @@ startWorld seed = World {
     level=1,
     points=0,
     labyrinth=genLabyrinth (30,20) 0.5 seed,
-    pacman=Object{pos=(2, 5), size=pacManSize, direction=(0,0)},
+    pacman=Object{pos=(1, 1), size=pacManSize, direction=(0,0)},
     ghosts=undefined,
     dots=undefined,
-    fruits=undefined
+    fruits=undefined,
+    dbgInfo = DbgInf{ info = "test\ntest" }
 }
 	where
 		pacManSize = (0.7,0.7)
@@ -93,7 +94,7 @@ movePacman d world@World{ pacman=pacMan } =
 	where
 		--newPos = pos pacMan <+> direction pacMan <* d
 		newPos = pos pacMan <+> ((fOnVec fromIntegral allowedDir) <* (speeeed * d))
-		speeeed = 5
+		speeeed = 2
 		allowedDir = foldl (<+>) (0,0) $ map directionToSpeed $ intersect dirsToTry possibleDirs
 		dirsToTry = speedToDirection $ direction pacMan
 		possibleDirs = possibleDirections (labyrinth world) pacMan
@@ -110,11 +111,12 @@ possibleDirections lab obj = filter (objCanMoveThere lab obj) allDirs
 
 objCanMoveThere :: Labyrinth -> Object -> Direction -> Bool
 objCanMoveThere lab obj@Object{ pos=pos, size=size } dir =
-	foldl (&&) True $ 
+	--foldl (&&) True $ 
+	and $
 	map ((==Free) . directionToTerritory lab dir . fOnVec floor) [pos] --[pos,pos+size]
 
 -- |used to check wether it is possible for a moving object to proceed moving in the current direction
 directionToTerritory :: Labyrinth -> Direction -> Pos -> Territory
 directionToTerritory lab dir pos = mGet (swap newPos) lab
 	where
-		newPos = getNeighbourIndex (mGetWidth lab,mGetHeight lab) pos dir
+		newPos = movePoint (mGetWidth lab,mGetHeight lab) pos (directionToSpeed dir)

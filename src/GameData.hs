@@ -5,6 +5,8 @@ import Graphics.Gloss hiding(Point)
 import Math.Matrix
 
 import Prelude hiding(Left,Right)
+import Data.Fixed
+import Data.Typeable
 
 -- |Directions in Labyrinth
 data Direction = Up | Down | Right | Left deriving (Eq, Show)
@@ -52,8 +54,13 @@ data World = World {
     pacman :: Pacman,
     ghosts :: [Ghost],
     dots :: [Dot],
-    fruits :: [Fruit]
-}
+    fruits :: [Fruit],
+    dbgInfo :: DebugInfo
+} deriving(Show)
+
+data DebugInfo = DbgInf {
+	info :: String
+} deriving(Show)
 
 type Level = Int
 type Points = Int
@@ -74,14 +81,14 @@ data Object = Object {
     --speed :: Float , 
     direction :: SpeedF
     --direction :: Direction
-}
+} deriving(Show)
 
 type Dot = Object
 type Fruit = Object
 type Pacman = Object
 type Ghost = Object
 
-data UIState = Playing | Menu
+data UIState = Playing | Menu deriving(Show)
 
 {-
 data World = World {
@@ -159,27 +166,45 @@ speedToDirection speed =
 			0 -> []
 	in
 		xDir ++ yDir
-				
+
+{-rest :: (Num a, Integral m) => a -> m -> a
+rest val m = case (cast val :: Maybe Int) of
+	Just i -> i `mod` m
+	_ -> case (cast val :: (Real a)=> a) of
+		Just f -> f mod' m
+		_ -> error "type not found!"
+-}
+	
+{-
+rest :: (Integral a) => a -> a -> a
+rest = mod
+
+restF :: (Real f) => f -> f -> f
+restF = mod'
+-}
+
+pointInSize (width,height) (x,y)  = (x `mod` width, y `mod` height)
+--pointInSize size pos = fOnVec (mod size) pos
+--pointInSizeF size pos = fOnVec (mod' size) pos
+pointInSizeF (width,height) (x,y)  = (x `mod'` width, y `mod'` height)
+
+movePoint size pos dir = pointInSize size (pos <+> dir)
+movePointF size pos dir = pointInSizeF size (pos <+> dir)
 
 -- realizes a "torus like" behavior for positions on the field
-getNeighbourIndex :: Size -> MatrIndex -> Movement -> MatrIndex
+{-getNeighbourIndex :: Size -> MatrIndex -> Movement -> MatrIndex
 getNeighbourIndex (width,height) pos@(x,y) dir = case dir of
 	Up -> (x,(y-1) `niceMod` height)
-	--UpRight -> getNeighbourIndex field (getNeighbourIndex field pos Up) Right
 	Right -> ((x+1) `niceMod` width, y)
-	--DownRight -> getNeighbourIndex field (getNeighbourIndex field pos Down) Right
 	Down -> (x,(y+1) `niceMod` height)
-	--DownLeft -> getNeighbourIndex field (getNeighbourIndex field pos Down) Left
 	Left -> ((x-1) `niceMod` width, y)
---UpLeft -> getNeighbourIndex field (getNeighbourIndex field pos Up) Left
 	where
-		{-width = mGetWidth field
-		height = mGetHeight field-}
 		niceMod val m = case signum val of
 			(-1) -> niceMod (val+m) m
 			(1) -> val `mod` m
 			(0) -> 0
 			otherwise -> error "niceMod internal error!"
+-}
 
 {-data ObjectType = Dot | Fruit
 data MovableObjType = PacMan | Monster-}

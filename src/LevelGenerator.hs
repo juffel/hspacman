@@ -31,7 +31,7 @@ massiveField (width,height) = mUnsafe (take height $ repeat lines)
 randomTunnels :: (RandomGen g) => Labyrinth -> Float -> Rand g Labyrinth
 randomTunnels lab wallRatio = if currentWallRatio <= wallRatio then return lab else do
 	randomPos <- fromList $ zip (map swap $ mGetAllIndex lab) (repeat 1)
-	let oneStepLeft = (getNeighbourIndex (mGetWidth lab,mGetHeight lab) randomPos Left)
+	let oneStepLeft = (movePoint (mGetWidth lab,mGetHeight lab) randomPos (directionToSpeed Left))
 	lab' <- boreTunnel randomPos Right lab
 	lab'' <- boreTunnel oneStepLeft Left lab'
 	randomTunnels lab'' wallRatio -- <- recursion !
@@ -63,7 +63,7 @@ calcNewMatr beh pos0 matr st = do
 		Nothing -> return newMatr
 		Just dir -> calcNewMatr beh newPos newMatr st'
 			where
-				newPos = getNeighbourIndex (mGetWidth matr, mGetHeight matr) pos0 dir
+				newPos = movePoint (mGetWidth matr, mGetHeight matr) pos0 (directionToSpeed dir)
 
 -- |let a "worm" take exactly one step:
 oneStep :: (Behaviour st g a) -> Pos -> Matrix a -> st -> Rand g ((Matrix a), Maybe Movement,st)
@@ -91,7 +91,7 @@ wormBehaviour dirAndProp@(favDir,_) (mat,pos,WS{ lastDir=lastDir }) = do
 			(mGet (swap rightPos) mat)/=Free 
 			then Just $ rndDir
 			else Nothing
-		[forwardPos,leftPos,rightPos] = map (getNeighbourIndex (mGetWidth mat,mGetHeight mat) pos) [lastDir, leftOf lastDir, rightOf lastDir]
+		[forwardPos,leftPos,rightPos] = map (movePoint (mGetWidth mat,mGetHeight mat) pos . directionToSpeed) [lastDir, leftOf lastDir, rightOf lastDir]
 
 
 -- returns a distribution of directions, given any "favourite" direction:
