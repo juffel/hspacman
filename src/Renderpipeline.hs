@@ -5,6 +5,7 @@ import LevelGenerator
 import Vector2D
 import Math.Matrix
 import qualified Data.Foldable as F -- enables folds over matrices
+import Data.Tuple
 
 import Graphics.Gloss hiding(display)
 import qualified Graphics.Gloss as G
@@ -52,8 +53,25 @@ renderGame wSize dbgTextArea gameArea world = Pictures $ [
 	]
 
 renderGameArea :: WindowSize -> DestAreaOnScreen -> World -> Picture
-renderGameArea wSize destArea world = Color green $ Polygon $
-	map (normalizedPosToGloss wSize destArea) [(0,0),(0,1),(1,1),(1,0),(0,0)]
+renderGameArea wSize destArea world = Pictures [
+	renderLabyrinth wSize destArea (labyrinth world)]
+
+renderLabyrinth :: WindowSize -> DestAreaOnScreen -> Labyrinth -> Picture
+renderLabyrinth wSize destArea lab = Pictures $ F.foldr (:)[] $ mapWithIndex drawCell lab
+	where
+        -- in order to display the matrix correctly the lines/columns have to be flipped when drawing
+		drawCell :: MatrIndex -> Territory -> Picture
+		drawCell coords = drawCell' (swap coords)
+		drawCell' coords ter = case ter of
+			Free -> Color white $ Polygon $ [ pos, pos<+>(0,hCell), pos<+>(wCell,hCell), pos<+>(wCell,0), pos ]
+			Wall -> Color black $ Polygon $ [ pos, pos<+>(0,hCell), pos<+>(wCell,hCell), pos<+>(wCell,0), pos ]
+	    		where
+				pos = posFromCoords coords
+				posFromCoords coords = normalizedPosToGloss wSize destArea $ fOnVec fromIntegral coords </> (fromIntegral $ mGetWidth lab, fromIntegral $ mGetHeight lab)
+				(wCell,hCell) = posFromCoords (coords <+> (1,1)) <-> pos
+
+{-Color green $ Polygon $
+map (normalizedPosToGloss wSize destArea) [(0,0),(0,1),(1,1),(1,0),(0,0)]-}
 
 
 renderDbgText :: WindowSize -> DestAreaOnScreen -> World -> Picture
@@ -67,12 +85,10 @@ renderDbgText wSize destArea world = renderLines 0 $ lines $ info $ dbgInfo worl
 				Color white $ 
 				Scale 0.1 0.1 $
 				Text x,
-
 				renderLines (yPos+lineHeight) xs ]
-			where lineHeight = (1-yPos) / (fromIntegral $ length lines)
---Color violet $ Polygon $
-	--map (normalizedPosToGloss wSize destArea) [(0,0),(0,1),(1,1),(1,0),(0,0)]
-
+			where lineHeight = min 
+				((1-yPos) / (fromIntegral $ length lines))
+				0.1
 
 -- coordinate translaters:
 
