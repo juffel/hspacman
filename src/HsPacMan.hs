@@ -18,8 +18,6 @@ windowTitle = "hsPacMan"
 windowPos = (100, 100)  :: PosOnScreen
 windowSize = (800, 600) :: SizeOnScreen
 
---fieldArea = ((0,0),(800,600)) :: AreaOnScreen
-
 main = play
 	display
 	bgColour
@@ -81,11 +79,7 @@ setPacDir world dir = world {pacman = (pacman world) {direction=dir}}
 
 moveWorld :: DeltaT -> World -> World
 moveWorld deltaT world = (movePacman deltaT) $ (moveGhosts deltaT) world
--- move pacman
--- move ghosts
--- check for collisions/item pickups
 
--- TODO
 moveGhosts :: DeltaT -> World -> World
 moveGhosts d world = world
 
@@ -100,23 +94,11 @@ movePacman d world@World{ pacman=pacMan } =
 			"possibleDirs: " ++ show possibleDirs-}
 		newPos = if (willCollide (labyrinth world) speed d pacMan)
 			then pos pacMan
-			else (pointInSizeF labSize $ pos pacMan <+> (direction pacMan) <* (speed * d))
+			else (pointInSizeF labSize $ pos pacMan <+> (direction pacMan) <* (speed * d)) -- pointInSize: torus
 				where
 					labSize = fOnVec fromIntegral (mGetWidth lab -1,mGetHeight lab -1)
 					lab = labyrinth world
 		speed = 2
-		{-newPos = pos pacMan <+> ((fOnVec fromIntegral allowedDir) <* (speeeed * d))
-		speeeed = 2
-		allowedDir = foldl (<+>) (0,0) $ map directionToSpeed $ intersect dirsToTry possibleDirs
-		dirsToTry = speedToDirection $ direction pacMan
-		possibleDirs = possibleDirections (labyrinth world) pacMan-}
-        {-newPos = (pos $ pacman $ world) <+> (d *> dirSpeed)
-        dirSpeed = case (direction $ pacman $ world) of
-            GameData.Up -> (0, -(speed $ pacman $ world))
-            GameData.Down -> (0, (speed $ pacman $ world))
-            GameData.Right-> ((speed $ pacman $ world), 0)
-            GameData.Left -> (-(speed $ pacman $ world), 0)
-	-}
 
 
 willCollide lab speed deltaT obj = or $ map (willPointCollide lab speed deltaT (direction obj)) $
@@ -132,7 +114,6 @@ willPointCollide lab speed deltaT dir oldPos = (==Wall) $ mGet (calcMatrIndex ne
 			fOnVec floor $
 			pointInSizeF (fromIntegral $ mGetWidth lab -1, fromIntegral $ mGetHeight lab -1) nextPos -- torus
 		nextPos = (oldPos <+> dir <* (speed * deltaT))
-		--[oldPos,dir] = [pos obj, direction obj]
 
 {-possibleDirections :: Labyrinth -> Object -> [Direction]
 possibleDirections lab obj = filter (objCanMoveThere lab obj) allDirs
