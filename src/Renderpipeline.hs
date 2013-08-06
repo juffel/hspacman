@@ -65,6 +65,7 @@ renderGameArea wSize destArea world = Pictures [
 renderPacMan :: WindowSize -> DestAreaOnScreen -> SizeF -> Pacman -> Picture
 renderPacMan wSize gameArea@(fieldPos,fieldSize) cellSize pacman =
 	(uncurry Translate) (normalizedPosToGloss wSize gameArea (cellSize <*> (pos pacman))) $
+	(uncurry Scale) (size pacman) $
 	(uncurry Scale) (normalizedPosToScreen gameArea cellSize <-> normalizedPosToScreen gameArea (0,0)) $
 	Translate (1/2) (-1/2) $
 	Color yellow $
