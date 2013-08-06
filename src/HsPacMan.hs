@@ -67,6 +67,7 @@ handleInput event world =
                     Char 's' -> setPacDir world (directionToSpeed GameData.Down)
                     Char 'a' -> setPacDir world (directionToSpeed GameData.Left)
                     Char 'd' -> setPacDir world (directionToSpeed GameData.Right)
+                    SpecialKey KeySpace -> setPacDir world (0,0)
                     _ -> world --alternative playing
 
     _ -> world -- ignore other events
@@ -93,8 +94,10 @@ movePacman d world@World{ pacman=pacMan } =
 	world { pacman=pacMan{ pos=newPos }, dbgInfo=DbgInf{ info=dbgText} }
 	where
 		--newPos = pos pacMan <+> direction pacMan <* d
-		dbgText = (show $ pos pacMan) ++ "\n" ++
-			show possibleDirs
+		dbgText =
+			"pos pacMan: " ++ (show $ fOnVec floor $ pos pacMan) ++ "\n" ++
+			"pos pacMan exact: " ++ (show $ pos pacMan) ++ "\n" ++
+			"possibleDirs: " ++ show possibleDirs
 		newPos = pos pacMan <+> ((fOnVec fromIntegral allowedDir) <* (speeeed * d))
 		speeeed = 2
 		allowedDir = foldl (<+>) (0,0) $ map directionToSpeed $ intersect dirsToTry possibleDirs

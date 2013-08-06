@@ -41,7 +41,7 @@ renderWorld wSize world = case (uiState world) of
 		gameArea = ((textAreaWidth,0), wSize <-> (textAreaWidth,0))
 		dbgTextArea = ((0,0),    (textAreaWidth,vecY wSize))
 		menuArea = ((0,0),wSize)
-		textAreaWidth = 100
+		textAreaWidth = 200
 
 renderMenu :: WindowSize -> DestAreaOnScreen -> World -> Picture
 renderMenu wSize destArea world = Color yellow $ Polygon $
