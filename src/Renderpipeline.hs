@@ -45,7 +45,7 @@ renderWorld wSize world = case (uiState world) of
 
 renderMenu :: WindowSize -> DestAreaOnScreen -> World -> Picture
 renderMenu wSize destArea world = Color yellow $ Polygon $
-	map (normalizedPosToGloss wSize destArea) [(0,0),(0,1),(1,1),(1,0),(0,0)]
+	map (normalizedPosToGloss wSize destArea) $ rect (0,0) (1,1)
 
 renderGame :: WindowSize -> DestAreaOnScreen -> DestAreaOnScreen -> World -> Picture
 renderGame wSize dbgTextArea gameArea world = Pictures $ [
@@ -55,10 +55,23 @@ renderGame wSize dbgTextArea gameArea world = Pictures $ [
 
 renderGameArea :: WindowSize -> DestAreaOnScreen -> World -> Picture
 renderGameArea wSize destArea world = Pictures [
-	renderLabyrinth wSize destArea (labyrinth world)]
+	Color white $ Line (fmap (normalizedPosToGloss wSize destArea) $ rect (0,0) (1,1)),
+	renderLabyrinth wSize destArea cellSize (labyrinth world),
+	renderPacMan wSize destArea cellSize (pacman world)]
+	where
+		cellSize :: SizeF
+		cellSize = (1,1) </> (fromIntegral $ mGetWidth lab, fromIntegral $ mGetHeight lab)
+		lab = labyrinth world 
+renderPacMan :: WindowSize -> DestAreaOnScreen -> SizeF -> Pacman -> Picture
+renderPacMan wSize gameArea@(fieldPos,fieldSize) cellSize pacman =
+	(uncurry Translate) (normalizedPosToGloss wSize gameArea (cellSize <*> (pos pacman))) $
+	(uncurry Scale) (normalizedPosToScreen gameArea cellSize <-> normalizedPosToScreen gameArea (0,0)) $
+	Translate (1/2) (-1/2) $
+	Color yellow $
+	ThickCircle (1/4) (1/2)
 
-renderLabyrinth :: WindowSize -> DestAreaOnScreen -> Labyrinth -> Picture
-renderLabyrinth wSize destArea lab = Pictures $ F.foldr (:)[] $ mapWithIndex drawCell lab
+renderLabyrinth :: WindowSize -> DestAreaOnScreen -> SizeF -> Labyrinth -> Picture
+renderLabyrinth wSize destArea cellSize lab = Pictures $ F.foldr (:)[] $ mapWithIndex drawCell lab
 	where
         -- in order to display the matrix correctly the lines/columns have to be flipped when drawing
 		drawCell :: MatrIndex -> Territory -> Picture
@@ -69,14 +82,10 @@ renderLabyrinth wSize destArea lab = Pictures $ F.foldr (:)[] $ mapWithIndex dra
 	    		where
 				posCell = posFromCoords coords
 				sizeCell= posFromCoords (coords <+> (1,1)) <-> posCell
-				posFromCoords coords = normalizedPosToGloss wSize destArea $ fOnVec fromIntegral coords </> (fromIntegral $ mGetWidth lab, fromIntegral $ mGetHeight lab)
+				posFromCoords coords = normalizedPosToGloss wSize destArea $ fOnVec fromIntegral coords <*> cellSize
 
 rect :: NormalCoords -> NormalSize -> [NormalCoords]
 rect pos (w,h) = [ pos, pos<+>(0,h), pos<+>(w,h), pos<+>(w,0), pos ]
-
-{-Color green $ Polygon $
-map (normalizedPosToGloss wSize destArea) [(0,0),(0,1),(1,1),(1,0),(0,0)]-}
-
 
 renderDbgText :: WindowSize -> DestAreaOnScreen -> World -> Picture
 renderDbgText wSize destArea world = renderLines 0 $ lines $ info $ dbgInfo world

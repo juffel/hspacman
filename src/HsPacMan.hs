@@ -90,9 +90,11 @@ moveGhosts d world = world
 
 movePacman :: DeltaT -> World -> World
 movePacman d world@World{ pacman=pacMan } =
-	world { pacman=pacMan{ pos=newPos } }
+	world { pacman=pacMan{ pos=newPos }, dbgInfo=DbgInf{ info=dbgText} }
 	where
 		--newPos = pos pacMan <+> direction pacMan <* d
+		dbgText = (show $ pos pacMan) ++ "\n" ++
+			show possibleDirs
 		newPos = pos pacMan <+> ((fOnVec fromIntegral allowedDir) <* (speeeed * d))
 		speeeed = 2
 		allowedDir = foldl (<+>) (0,0) $ map directionToSpeed $ intersect dirsToTry possibleDirs
