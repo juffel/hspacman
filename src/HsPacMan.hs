@@ -26,7 +26,7 @@ main = play
 	display
 	bgColour
 	framerate
-	(startWorld 2)
+	(startWorld 0)
 	(renderWorld windowSize) -- calls renderWorld from Module Renderpipeline
 	handleInput
 	moveWorld
@@ -39,7 +39,7 @@ startWorld seed = World {
     uiState=Menu,
     level=1,
     points=0,
-    labyrinth=genLabyrinth (30,20) 0.5 seed,
+    labyrinth=genLabyrinth (30,20) 0.4 seed,
     pacman=Object{pos=(1, 1), size=pacManSize, direction=(0,0), t=0 },
     ghosts=ghosts,
     dots=undefined,
@@ -57,15 +57,16 @@ handleInput event world = case event of
 	(EventKey key upOrDown _ _) -> case (uiState world) of
 		Menu -> case upOrDown of
 		  	G.Down -> case key of
-				-- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
-				-- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
-					{-SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
-					SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
-					SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
-					SpecialKey KeyEsc -> undefined    -- spiel verlassen-}
-					Char 's' -> setUIState (startWorld 8) Playing
-					Char 'p' -> undefined -- TODO: pause
-					--_ -> world --alternative menue
+			-- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
+			-- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
+				{-SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
+				SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
+				SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
+				SpecialKey KeyEsc -> undefined    -- spiel verlassen-}
+				Char 's' -> setUIState (startWorld 8) Playing
+				Char 'p' -> undefined -- TODO: pause
+				_ -> world --alternative menue
+			_ -> world --alternative menue
 		Playing -> case upOrDown of
 			G.Down -> case key of
 				Char 'w' -> world{ keys= addDir Up }
@@ -80,11 +81,11 @@ handleInput event world = case event of
 				Char 'a' -> world{ keys= remDir Left }
 				Char 'd' -> world{ keys= remDir Right }
 				SpecialKey KeySpace -> setPacDir world (0,0)
-				--_ -> world --alternative playing
 		where
 			addDir dir = [dir] `union` (remDir $ opposite dir)
 			remDir dir = filter (/=dir) currentKeys
 			currentKeys = keys world
+	_ -> world --alternative playing
 
 
 setUIState :: World -> UIState -> World

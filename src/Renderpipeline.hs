@@ -81,7 +81,8 @@ renderGhosts wSize gameArea@(fieldPos,fieldSize) cellSize ghosts = Pictures $ ma
 	
 renderGhost :: WindowSize -> DestAreaOnScreen -> SizeF -> Ghost -> Picture
 renderGhost wSize gameArea@(fieldPos,fieldSize) cellSize ghost = renderChar wSize gameArea cellSize ghost$
-	Translate (1/2) (-1/2) $
+	Translate (0) (-1) $
+	--Translate (1/2) (-1/2) $
 	Color green $
 	(Polygon $ rect (0,0) (1,1))
 	where
