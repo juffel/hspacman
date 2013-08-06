@@ -47,16 +47,19 @@ type Time = Float
 type DeltaT = Float
 
 data World = World {
-    uiState :: UIState,
-    level :: Level,
-    points :: Points,
-    labyrinth :: Labyrinth,
-    pacman :: Pacman,
-    ghosts :: [Ghost],
-    dots :: [Dot],
-    fruits :: [Fruit],
-    dbgInfo :: DebugInfo
+	uiState :: UIState,
+	keys :: CurrentKeys,
+	level :: Level,
+	points :: Points,
+	labyrinth :: Labyrinth,
+	pacman :: Pacman,
+	ghosts :: [Ghost],
+	dots :: [Dot],
+	fruits :: [Fruit],
+	dbgInfo :: DebugInfo
 } deriving(Show)
+
+type CurrentKeys = [Direction]
 
 data DebugInfo = DbgInf {
 	info :: String
@@ -76,12 +79,12 @@ instance Enum Territory where
 		Wall -> 1
 
 data Object = Object {
-    pos :: PosF,
-    size :: SizeF,
-    --speed :: Float , 
-    direction :: SpeedF,
-    t :: Time
-    --direction :: Direction
+	pos :: PosF,
+	size :: SizeF,
+	--speed :: Float , 
+	direction :: SpeedF,
+	t :: Time
+	--direction :: Direction
 } deriving(Show)
 
 type Dot = Object
@@ -148,6 +151,7 @@ data MovableObj = MovableObj {
 data MovableParams = MovableParams {
 	speed :: SpeedF
 } -}
+directionsToSpeed = foldl (<+>) (0,0) . map directionToSpeed
 
 directionToSpeed Up = (0,-1)
 directionToSpeed Down = (0,1)

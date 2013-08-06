@@ -6,8 +6,12 @@ import Renderpipeline
 import Vector2D
 import Math.Matrix
 
+import Prelude hiding(Left,Right)
+
+import Prelude hiding(Left,Right)
+
 import Graphics.Gloss hiding(display)
-import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss.Interface.Pure.Game hiding(Up,Down)
 import qualified Graphics.Gloss.Interface.Pure.Game as G
 import qualified Graphics.Gloss as G
 
@@ -40,37 +44,48 @@ startWorld seed = World {
     ghosts=ghosts,
     dots=undefined,
     fruits=undefined,
-    dbgInfo = DbgInf{ info = "test\ntest" }
+    dbgInfo = DbgInf{ info = "test\ntest" },
+    keys = []
 }
 	where
 		pacManSize = (0.7,0.7)
 		ghosts = [
-			Object{ pos=(19,20), size=pacManSize, direction=(1,1), t=0 }]
+			Object{ pos=(19,20), size=pacManSize, direction=(0.1,0.1), t=0 }]
 
 handleInput :: Event -> World -> World
-handleInput event world =
-    case event of
-    (EventKey key G.Down _ _) ->
-            case (uiState world) of
-                Menu -> case key of
-                -- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
-                -- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
-                    {-SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
-                    SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
-                    SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
-                    SpecialKey KeyEsc -> undefined    -- spiel verlassen-}
-                    Char 's' -> setUIState (startWorld 8) Playing
-                    Char 'p' -> undefined -- TODO: pause
-                    _ -> world --alternative menue
-                Playing -> case key of
-                    Char 'w' -> setPacDir world (directionToSpeed GameData.Up)
-                    Char 's' -> setPacDir world (directionToSpeed GameData.Down)
-                    Char 'a' -> setPacDir world (directionToSpeed GameData.Left)
-                    Char 'd' -> setPacDir world (directionToSpeed GameData.Right)
-                    SpecialKey KeySpace -> setPacDir world (0,0)
-                    _ -> world --alternative playing
+handleInput event world = case event of
+	(EventKey key upOrDown _ _) -> case (uiState world) of
+		Menu -> case upOrDown of
+		  	G.Down -> case key of
+				-- Offnen: Menu hat entweder Punkte die durch einen Cursor ausgewählt werden
+				-- oder: Menu hat Optionen die durch bestimmte Tasten ausgelöst werden.
+					{-SpecialKey KeyEnter -> undefined    -- menuepunkt auswählen
+					SpecialKey KeyUp -> undefined       -- einen menupunkt hoeher
+					SpecialKey KeyDown -> undefined     -- einen menupunkt tiefer
+					SpecialKey KeyEsc -> undefined    -- spiel verlassen-}
+					Char 's' -> setUIState (startWorld 8) Playing
+					Char 'p' -> undefined -- TODO: pause
+					--_ -> world --alternative menue
+		Playing -> case upOrDown of
+			G.Down -> case key of
+				Char 'w' -> world{ keys= addDir Up }
+				Char 's' -> world{ keys= addDir Down }
+				Char 'a' -> world{ keys= addDir Left }
+				Char 'd' -> world{ keys= addDir Right }
+				SpecialKey KeySpace -> setPacDir world (0,0)
+				--_ -> world --alternative playing
+			G.Up -> case key of
+				Char 'w' -> world{ keys= remDir Up }
+				Char 's' -> world{ keys= remDir Down }
+				Char 'a' -> world{ keys= remDir Left }
+				Char 'd' -> world{ keys= remDir Right }
+				SpecialKey KeySpace -> setPacDir world (0,0)
+				--_ -> world --alternative playing
+		where
+			addDir dir = [dir] `union` (remDir $ opposite dir)
+			remDir dir = filter (/=dir) currentKeys
+			currentKeys = keys world
 
-    _ -> world -- ignore other events
 
 setUIState :: World -> UIState -> World
 setUIState world state = world {uiState = state}
@@ -85,49 +100,57 @@ moveWorld deltaT world = (movePacman deltaT) $ (moveGhosts deltaT) world
 moveGhosts :: DeltaT -> World -> World
 moveGhosts dt world =
 	world{
-		ghosts= map (moveCharacter dt world monsterSpeed) (ghosts world)
+		ghosts= map (moveCharacter dt world . setDirection world) (ghosts world)
 	}
 	where
-		monsterSpeed = (fromIntegral $ level world)
+		--monsterSpeed = (fromIntegral $ level world)
+		-- this function is the ai for the ghosts
+		setDirection :: World -> Ghost -> Ghost
+		setDirection world ghost = ghost{ direction= direction pacManObj }
+		pacManObj= pacman world
+
 
 movePacman :: DeltaT -> World -> World
 movePacman dt world@World{ pacman=pacMan } =
 	world {
-		pacman=moveCharacter dt world speed pacMan--,
+		pacman = moveCharacter dt world $ setDirection pacMan
+		--,
 		--dbgInfo=DbgInf{ info=dbgText} }
 	}
 	where
+		setDirection :: Pacman -> Pacman
+		setDirection obj = obj{ direction = speed *> (fOnVec fromIntegral $ directionsToSpeed $ keys world) }
 		{-dbgText =
 			"pos pacMan: " ++ (show $ fOnVec floor $ pos pacMan) ++ "\n" ++
 			"pos pacMan exact: " ++ (show $ pos pacMan) ++ "\n" {-++
 			"possibleDirs: " ++ show possibleDirs-} -}
 		speed = 2
 
-moveCharacter :: DeltaT -> World -> Float -> Object -> Object
-moveCharacter dt world speed obj = obj{ pos=newPos, t= (t obj + dt) }
+moveCharacter :: DeltaT -> World -> Object -> Object
+moveCharacter dt world obj = obj{ pos=newPos, t= (t obj + dt) }
 	where
 		
-		newPos = if (willCollide (labyrinth world) speed dt obj)
+		newPos = if (willCollide (labyrinth world) dt obj)
 			then pos obj
-			else (pointInSizeF labSize $ pos obj <+> (direction obj) <* (speed * dt)) -- pointInSize: torus
+			else (pointInSizeF labSize $ pos obj <+> (direction obj) <* dt) -- pointInSize: torus
 				where
 					labSize = fOnVec fromIntegral (mGetWidth lab -1,mGetHeight lab -1)
 					lab = labyrinth world
 
 
-willCollide lab speed deltaT obj = or $ map (willPointCollide lab speed deltaT (direction obj)) $
+willCollide lab deltaT obj = or $ map (willPointCollide lab deltaT (direction obj)) $
 	[ p , p <+> (0,h), p <+> (w,h), p <+> (w,0) ]
 	where
 		p = pos obj
 		(w,h) = size obj
 
-willPointCollide lab speed deltaT dir oldPos = (==Wall) $ mGet (calcMatrIndex nextPos) lab 
+willPointCollide lab deltaT dir oldPos = (==Wall) $ mGet (calcMatrIndex nextPos) lab 
 	where
 		calcMatrIndex :: PosF -> MatrIndex
 		calcMatrIndex nextPos = swap $
 			fOnVec floor $
 			pointInSizeF (fromIntegral $ mGetWidth lab -1, fromIntegral $ mGetHeight lab -1) nextPos -- torus
-		nextPos = (oldPos <+> dir <* (speed * deltaT))
+		nextPos = (oldPos <+> dir <* deltaT)
 
 {-possibleDirections :: Labyrinth -> Object -> [Direction]
 possibleDirections lab obj = filter (objCanMoveThere lab obj) allDirs
