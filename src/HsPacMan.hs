@@ -36,7 +36,7 @@ startWorld seed = World {
     level=1,
     points=0,
     labyrinth=genLabyrinth (30,20) 0.5 seed,
-    pacman=Object{pos=(1, 1), size=pacManSize, direction=(0,0)},
+    pacman=Object{pos=(1, 1), size=pacManSize, direction=(0,0), t=0 },
     ghosts=undefined,
     dots=undefined,
     fruits=undefined,
@@ -85,7 +85,7 @@ moveGhosts d world = world
 
 movePacman :: DeltaT -> World -> World
 movePacman d world@World{ pacman=pacMan } =
-	world { pacman=pacMan{ pos=newPos }, dbgInfo=DbgInf{ info=dbgText} }
+	world { pacman=pacMan{ pos=newPos, t=(t pacMan + d) }, dbgInfo=DbgInf{ info=dbgText} }
 	where
 		--newPos = pos pacMan <+> direction pacMan <* d
 		dbgText =

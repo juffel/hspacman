@@ -62,6 +62,8 @@ renderGameArea wSize destArea world = Pictures [
 		cellSize :: SizeF
 		cellSize = (1,1) </> (fromIntegral $ mGetWidth lab, fromIntegral $ mGetHeight lab)
 		lab = labyrinth world 
+
+
 renderPacMan :: WindowSize -> DestAreaOnScreen -> SizeF -> Pacman -> Picture
 renderPacMan wSize gameArea@(fieldPos,fieldSize) cellSize pacman =
 	(uncurry Translate) (normalizedPosToGloss wSize gameArea (cellSize <*> (pos pacman))) $
@@ -69,7 +71,11 @@ renderPacMan wSize gameArea@(fieldPos,fieldSize) cellSize pacman =
 	(uncurry Scale) (normalizedPosToScreen gameArea cellSize <-> normalizedPosToScreen gameArea (0,0)) $
 	Translate (1/2) (-1/2) $
 	Color yellow $
-	ThickCircle (1/4) (1/2)
+	--Rotate 90 $ -- roation doesn't work due to a bug in gloss!!
+	ThickArc (mouthAngle/2) (-mouthAngle/2) (1/4) (1/2)
+	where
+		mouthAngle = 90 * (sin $ 5 * t pacman)
+
 
 renderLabyrinth :: WindowSize -> DestAreaOnScreen -> SizeF -> Labyrinth -> Picture
 renderLabyrinth wSize destArea cellSize lab = Pictures $ F.foldr (:)[] $ mapWithIndex drawCell lab
@@ -85,8 +91,11 @@ renderLabyrinth wSize destArea cellSize lab = Pictures $ F.foldr (:)[] $ mapWith
 				sizeCell= posFromCoords (coords <+> (1,1)) <-> posCell
 				posFromCoords coords = normalizedPosToGloss wSize destArea $ fOnVec fromIntegral coords <*> cellSize
 
+
 rect :: NormalCoords -> NormalSize -> [NormalCoords]
 rect pos (w,h) = [ pos, pos<+>(0,h), pos<+>(w,h), pos<+>(w,0), pos ]
+
+
 
 renderDbgText :: WindowSize -> DestAreaOnScreen -> World -> Picture
 renderDbgText wSize destArea world = renderLines 0 $ lines $ info $ dbgInfo world

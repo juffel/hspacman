@@ -79,7 +79,8 @@ data Object = Object {
     pos :: PosF,
     size :: SizeF,
     --speed :: Float , 
-    direction :: SpeedF
+    direction :: SpeedF,
+    t :: Time
     --direction :: Direction
 } deriving(Show)
 
